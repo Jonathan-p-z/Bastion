@@ -1,0 +1,25 @@
+# Secrets
+.env
+.env.local
+config.yaml
+
+# Database
+data/
+*.db
+
+# Binaries
+security_bot
+sentinel
+*.exe
+
+# Assets locaux
+*.jpg
+*.png
+*.jpeg
+
+# Logs
+*.log
+build_errors.log
+
+# Go
+vendor/

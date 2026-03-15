@@ -133,7 +133,8 @@ func DefaultConfig() Config {
 		Mode:                      "normal",
 		DefaultSecurityLogChannel: "",
 		DefaultLanguage:           "fr",
-		Health:                    HealthConfig{Enabled: false, Addr: ":8080"},
+		Health:                    HealthConfig{Enabled: false, Addr: "0.0.0.0:8080"},
+		Dashboard:                 DashboardConfig{Addr: "0.0.0.0:8081"},
 		Risk:                      RiskConfig{DecayPerMinute: 0.5, TTLMinutes: 60, TrustWeight: 0.5},
 		Trust:                     TrustConfig{MaxScore: 100, TTLMinutes: 1440},
 		Thresholds: Thresholds{

@@ -87,7 +87,7 @@
 
     <div class="sidebar-footer">
       {{if .User}}
-      <div class="flex items-center justify-between" style="padding: 8px 10px;">
+      <div class="flex items-center justify-between" style="padding:6px 8px">
         <div class="flex items-center gap-2">
           <img class="sidebar-avatar" src="{{avatarURL .User.UserID .User.Avatar}}" alt="avatar">
           <div class="sidebar-user-info">
@@ -109,7 +109,11 @@
   <!-- Main -->
   <div class="main">
     <header class="topbar">
-      <button id="sidebar-toggle" class="btn btn-ghost btn-sm" style="display:none">☰</button>
+      <button id="sidebar-toggle" class="btn btn-ghost btn-sm" style="display:none">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
       <nav class="topbar-breadcrumb">
         {{block "breadcrumb" .}}
         <a href="/app">Dashboard</a>

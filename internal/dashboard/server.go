@@ -5,6 +5,7 @@ import (
 	"embed"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"net/http"
 	"time"
 
@@ -62,7 +63,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) routes() {
 	// Static assets from embedded web/static/
-	s.mux.Handle("/static/", http.StripPrefix("/static/", http.FileServerFS(web.StaticFS)))
+	staticFS, err := fs.Sub(web.StaticFS, "static")
+	if err != nil {
+		panic(err)
+	}
+	s.mux.Handle("/static/", http.StripPrefix("/static/", http.FileServerFS(staticFS)))
 
 	// Public
 	s.mux.HandleFunc("/", s.handleLanding)

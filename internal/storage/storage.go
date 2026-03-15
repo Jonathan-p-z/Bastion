@@ -10,6 +10,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 //go:embed migrations/*.sql

@@ -2,8 +2,8 @@ package bot
 
 var translations = map[string]map[string]string{
 	"fr": {
-		"author_security":                "Sentinel Adaptive",
-		"footer_brand":                   "Sentinel Adaptive",
+		"author_security":                "Bastion",
+		"footer_brand":                   "Bastion",
 		"audit_title":                    "Journal d'audit",
 		"audit_desc":                     "Details de l'evenement.",
 		"audit_level":                    "Niveau",
@@ -156,8 +156,8 @@ var translations = map[string]map[string]string{
 		"field_effective":                "Effectif",
 	},
 	"en": {
-		"author_security":                "Sentinel Adaptive",
-		"footer_brand":                   "Sentinel Adaptive",
+		"author_security":                "Bastion",
+		"footer_brand":                   "Bastion",
 		"audit_title":                    "Audit Log",
 		"audit_desc":                     "Event details.",
 		"audit_level":                    "Level",
@@ -310,8 +310,8 @@ var translations = map[string]map[string]string{
 		"field_effective":                "Effective",
 	},
 	"es": {
-		"author_security":                "Sentinel Adaptive",
-		"footer_brand":                   "Sentinel Adaptive",
+		"author_security":                "Bastion",
+		"footer_brand":                   "Bastion",
 		"audit_title":                    "Registro de auditoria",
 		"audit_desc":                     "Detalles del evento.",
 		"audit_level":                    "Nivel",

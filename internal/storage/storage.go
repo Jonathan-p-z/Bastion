@@ -45,6 +45,10 @@ type GuildSettings struct {
 	NukeWebhookUpdate  int
 	NukeBanAdd         int
 	NukeGuildUpdate    int
+
+	// Auto-provisioned per-guild IDs.
+	OnboardingRoleID       string
+	ShadowmuteLogChannelID string
 }
 
 type AuditLog struct {
@@ -151,7 +155,8 @@ func (s *Store) GetGuildSettings(ctx context.Context, guildID string, defaults G
 		phishing_risk, lockdown_enabled,
 		nuke_enabled, nuke_window_seconds, nuke_channel_delete, nuke_channel_create,
 		nuke_channel_update, nuke_role_delete, nuke_role_create, nuke_role_update,
-		nuke_webhook_update, nuke_ban_add, nuke_guild_update
+		nuke_webhook_update, nuke_ban_add, nuke_guild_update,
+		onboarding_role_id, shadowmute_log_channel_id
 		FROM guild_settings WHERE guild_id = $1`, guildID)
 
 	result := defaults
@@ -180,6 +185,8 @@ func (s *Store) GetGuildSettings(ctx context.Context, guildID string, defaults G
 		&result.NukeWebhookUpdate,
 		&result.NukeBanAdd,
 		&result.NukeGuildUpdate,
+		&result.OnboardingRoleID,
+		&result.ShadowmuteLogChannelID,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -201,8 +208,9 @@ func (s *Store) UpsertGuildSettings(ctx context.Context, settings GuildSettings)
 			phishing_risk, lockdown_enabled,
 			nuke_enabled, nuke_window_seconds, nuke_channel_delete, nuke_channel_create,
 			nuke_channel_update, nuke_role_delete, nuke_role_create, nuke_role_update,
-			nuke_webhook_update, nuke_ban_add, nuke_guild_update
-		) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23)
+			nuke_webhook_update, nuke_ban_add, nuke_guild_update,
+			onboarding_role_id, shadowmute_log_channel_id
+		) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25)
 		ON CONFLICT(guild_id) DO UPDATE SET
 			security_log_channel = EXCLUDED.security_log_channel,
 			language = EXCLUDED.language,
@@ -225,7 +233,9 @@ func (s *Store) UpsertGuildSettings(ctx context.Context, settings GuildSettings)
 			nuke_role_update = EXCLUDED.nuke_role_update,
 			nuke_webhook_update = EXCLUDED.nuke_webhook_update,
 			nuke_ban_add = EXCLUDED.nuke_ban_add,
-			nuke_guild_update = EXCLUDED.nuke_guild_update`,
+			nuke_guild_update = EXCLUDED.nuke_guild_update,
+			onboarding_role_id = EXCLUDED.onboarding_role_id,
+			shadowmute_log_channel_id = EXCLUDED.shadowmute_log_channel_id`,
 		settings.GuildID,
 		settings.SecurityLogChannel,
 		settings.Language,
@@ -249,6 +259,8 @@ func (s *Store) UpsertGuildSettings(ctx context.Context, settings GuildSettings)
 		settings.NukeWebhookUpdate,
 		settings.NukeBanAdd,
 		settings.NukeGuildUpdate,
+		settings.OnboardingRoleID,
+		settings.ShadowmuteLogChannelID,
 	)
 	return err
 }

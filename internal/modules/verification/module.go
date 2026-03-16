@@ -32,8 +32,9 @@ const (
 
 // activeSession holds the in-memory state for an ongoing onboarding flow.
 type activeSession struct {
-	guildID string
-	state   string // "captcha" | "quiz"
+	guildID        string
+	state          string // "captcha" | "quiz"
+	verifiedRoleID string // per-guild, auto-provisioned
 }
 
 type Module struct {
@@ -60,7 +61,8 @@ func (m *Module) HandleVerify(ctx context.Context) {
 }
 
 // HandleMemberAdd initiates the onboarding flow for a newly joined member.
-func (m *Module) HandleMemberAdd(ctx context.Context, session *discordgo.Session, event *discordgo.GuildMemberAdd) {
+// verifiedRoleID is the per-guild role to assign on success (from guild_settings).
+func (m *Module) HandleMemberAdd(ctx context.Context, session *discordgo.Session, event *discordgo.GuildMemberAdd, verifiedRoleID string) {
 	if !m.cfg.Enabled || event.Member == nil || event.Member.User == nil {
 		return
 	}
@@ -70,7 +72,7 @@ func (m *Module) HandleMemberAdd(ctx context.Context, session *discordgo.Session
 
 	// Nothing to verify: grant role immediately.
 	if !m.cfg.CaptchaEnabled && !m.cfg.QuizEnabled {
-		m.grantRole(session, guildID, user.ID)
+		m.grantRole(session, guildID, user.ID, verifiedRoleID)
 		return
 	}
 
@@ -132,7 +134,7 @@ func (m *Module) HandleMemberAdd(ctx context.Context, session *discordgo.Session
 	})
 
 	m.mu.Lock()
-	m.sessions[user.ID] = &activeSession{guildID: guildID, state: initialState}
+	m.sessions[user.ID] = &activeSession{guildID: guildID, state: initialState, verifiedRoleID: verifiedRoleID}
 	m.mu.Unlock()
 
 	go m.scheduleExpiry(ctx, session, guildID, user.ID, timeout)
@@ -203,7 +205,7 @@ func (m *Module) handleCaptchaReply(
 	}
 
 	_, _ = session.ChannelMessageSend(msg.ChannelID, "✅ Vérification réussie ! Bienvenue sur le serveur.")
-	m.grantRole(session, sess.guildID, msg.Author.ID)
+	m.grantRole(session, sess.guildID, msg.Author.ID, sess.verifiedRoleID)
 	m.audit.Log(ctx, audit.LevelInfo, sess.guildID, msg.Author.ID, "onboarding_verified", "captcha ok")
 	m.cleanup(ctx, nil, sess.guildID, msg.Author.ID, false)
 }
@@ -217,7 +219,7 @@ func (m *Module) handleQuizReply(
 	answer := strings.TrimSpace(msg.Content)
 	if strings.EqualFold(answer, strings.TrimSpace(m.cfg.QuizAnswer)) {
 		_, _ = session.ChannelMessageSend(msg.ChannelID, "✅ Bonne réponse ! Bienvenue sur le serveur.")
-		m.grantRole(session, sess.guildID, msg.Author.ID)
+		m.grantRole(session, sess.guildID, msg.Author.ID, sess.verifiedRoleID)
 		m.audit.Log(ctx, audit.LevelInfo, sess.guildID, msg.Author.ID, "onboarding_verified", "quiz ok")
 		m.cleanup(ctx, nil, sess.guildID, msg.Author.ID, false)
 		return
@@ -255,11 +257,16 @@ func (m *Module) cleanup(ctx context.Context, session *discordgo.Session, guildI
 	}
 }
 
-func (m *Module) grantRole(session *discordgo.Session, guildID, userID string) {
-	if m.cfg.VerifiedRoleID == "" {
+// grantRole assigns the per-guild verified role. Falls back to the global config
+// value if the per-guild ID is not provisioned yet.
+func (m *Module) grantRole(session *discordgo.Session, guildID, userID, roleID string) {
+	if roleID == "" {
+		roleID = m.cfg.VerifiedRoleID
+	}
+	if roleID == "" {
 		return
 	}
-	_ = session.GuildMemberRoleAdd(guildID, userID, m.cfg.VerifiedRoleID)
+	_ = session.GuildMemberRoleAdd(guildID, userID, roleID)
 }
 
 // ── Captcha generation ────────────────────────────────────────────────────────

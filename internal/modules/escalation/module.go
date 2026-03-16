@@ -94,7 +94,7 @@ func (m *Module) applyAction(ctx context.Context, session *discordgo.Session, gu
 		}
 
 	case "ban":
-		if err := session.GuildBanCreateWithReason(guildID, userID, "Sentinel escalation ban", 0); err != nil {
+		if err := session.GuildBanCreateWithReason(guildID, userID, "Bastion escalation ban", 0); err != nil {
 			m.audit.Log(ctx, audit.LevelWarn, guildID, userID, "escalation_failed",
 				fmt.Sprintf("ban failed: %v", err))
 		}

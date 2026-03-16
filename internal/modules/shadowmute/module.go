@@ -25,10 +25,10 @@ func New(cfg config.ShadowMuteConfig, store *storage.Store, auditLogger *audit.L
 }
 
 // HandleMessage checks whether the message author is currently shadow-muted.
-// If so, it deletes the message silently, logs the suppression in the audit trail,
-// and relogs the message content in the configured admin channel (if any).
+// logChannelID is the per-guild admin channel (from guild_settings); falls back
+// to the global cfg.LogChannelID if empty.
 // Returns true when a suppression occurred — the caller must return immediately.
-func (m *Module) HandleMessage(ctx context.Context, session *discordgo.Session, msg *discordgo.MessageCreate) bool {
+func (m *Module) HandleMessage(ctx context.Context, session *discordgo.Session, msg *discordgo.MessageCreate, logChannelID string) bool {
 	if !m.cfg.Enabled {
 		return false
 	}
@@ -38,19 +38,21 @@ func (m *Module) HandleMessage(ctx context.Context, session *discordgo.Session, 
 		return false
 	}
 
-	// Silent delete — the user sees the message disappear as if it were a
-	// transient client glitch.
 	_ = session.ChannelMessageDelete(msg.ChannelID, msg.ID)
 
 	detail := fmt.Sprintf("channel=%s content=%s", msg.ChannelID, truncate(msg.Content, 200))
 	m.audit.Log(ctx, audit.LevelInfo, msg.GuildID, msg.Author.ID, "shadow_mute_delete", detail)
 
-	m.relayToLogChannel(session, msg)
+	// Per-guild channel takes priority over global config.
+	if logChannelID == "" {
+		logChannelID = m.cfg.LogChannelID
+	}
+	m.relayToLogChannel(session, msg, logChannelID)
 	return true
 }
 
-func (m *Module) relayToLogChannel(session *discordgo.Session, msg *discordgo.MessageCreate) {
-	if m.cfg.LogChannelID == "" {
+func (m *Module) relayToLogChannel(session *discordgo.Session, msg *discordgo.MessageCreate, logChannelID string) {
+	if logChannelID == "" {
 		return
 	}
 
@@ -75,7 +77,7 @@ func (m *Module) relayToLogChannel(session *discordgo.Session, msg *discordgo.Me
 		},
 		Timestamp: time.Now().Format(time.RFC3339),
 	}
-	_, _ = session.ChannelMessageSendEmbed(m.cfg.LogChannelID, embed)
+	_, _ = session.ChannelMessageSendEmbed(logChannelID, embed)
 }
 
 // AddMute shadow-mutes a user. expiresAt nil means permanent.

@@ -77,6 +77,7 @@ func (s *Server) routes() {
 
 	// Public
 	s.mux.HandleFunc("/", s.handleLanding)
+	s.mux.HandleFunc("/legal", s.handleLegal)
 	s.mux.HandleFunc("/login", s.handleLoginPage)
 
 	// OAuth2

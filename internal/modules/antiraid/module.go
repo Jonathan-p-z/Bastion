@@ -5,7 +5,6 @@ import (
 	"sync"
 	"time"
 
-	"sentinel-adaptive/internal/config"
 	"sentinel-adaptive/internal/modules/audit"
 	"sentinel-adaptive/internal/playbook"
 	"sentinel-adaptive/internal/utils"
@@ -16,32 +15,33 @@ import (
 type Module struct {
 	mu       sync.Mutex
 	counters map[string]*utils.JoinCounter
-	config   config.Thresholds
+	windows  map[string]time.Duration
 	playbook *playbook.Engine
 	audit    *audit.Logger
 }
 
-func New(cfg config.Thresholds, playbookEngine *playbook.Engine, auditLogger *audit.Logger) *Module {
+func New(playbookEngine *playbook.Engine, auditLogger *audit.Logger) *Module {
 	return &Module{
 		counters: make(map[string]*utils.JoinCounter),
-		config:   cfg,
+		windows:  make(map[string]time.Duration),
 		playbook: playbookEngine,
 		audit:    auditLogger,
 	}
 }
 
-func (m *Module) HandleJoin(ctx context.Context, session *discordgo.Session, event *discordgo.GuildMemberAdd) bool {
-	guildID := ""
-	if event.Member != nil {
+func (m *Module) HandleJoin(ctx context.Context, session *discordgo.Session, event *discordgo.GuildMemberAdd, raidJoins, raidWindowSeconds int) bool {
+	guildID := event.GuildID
+	if guildID == "" && event.Member != nil {
 		guildID = event.Member.GuildID
 	}
 	if guildID == "" {
 		return false
 	}
 
-	counter := m.getCounter(guildID)
+	window := time.Duration(raidWindowSeconds) * time.Second
+	counter := m.getCounter(guildID, window)
 	count := counter.Add(time.Now())
-	if count < m.config.RaidJoins {
+	if count < raidJoins {
 		return false
 	}
 
@@ -53,13 +53,12 @@ func (m *Module) HandleJoin(ctx context.Context, session *discordgo.Session, eve
 	return true
 }
 
-func (m *Module) getCounter(guildID string) *utils.JoinCounter {
+func (m *Module) getCounter(guildID string, window time.Duration) *utils.JoinCounter {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	counter := m.counters[guildID]
-	if counter == nil {
-		counter = utils.NewJoinCounter(time.Duration(m.config.RaidWindowSeconds) * time.Second)
-		m.counters[guildID] = counter
+	if prev, ok := m.windows[guildID]; !ok || prev != window {
+		m.counters[guildID] = utils.NewJoinCounter(window)
+		m.windows[guildID] = window
 	}
-	return counter
+	return m.counters[guildID]
 }

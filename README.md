@@ -344,9 +344,11 @@ Tracks per-user message counts in a sliding window (`spam_window_seconds`). When
 
 ### Anti-Raid
 
-Tracks guild join events in a sliding window (`raid_window_seconds`). When the count exceeds `raid_joins`:
+Tracks guild join events in a sliding window. When the count exceeds the threshold:
 - Triggers lockdown immediately
 - Logs `raid_lockdown` WARN
+
+Thresholds are **per-guild** and configurable via `/rules set raid_joins <n>` and `/rules set raid_window_seconds <n>`. The global config values serve as defaults for guilds that have not customised them. The sliding window is automatically reset if the window duration changes.
 
 ### Anti-Phishing
 
@@ -425,6 +427,10 @@ Every detection and enforcement action is written to the `audit_logs` table:
 
 When `audit_to_channel: true`, logs are mirrored as embeds to the security log channel in real time. Logs older than `retention_days` are purged automatically.
 
+**Console logs** resolve the Discord username (and server nickname when available) instead of the raw user ID, making it easier to understand who triggered an event at a glance.
+
+**Config-change events** (`config_change`) are logged for all slash commands that modify guild settings: `/mode`, `/preset`, `/lockdown`, `/language`, `/nuke enable|disable|set`.
+
 ---
 
 ## Whitelist
@@ -436,6 +442,10 @@ Manage via `/whitelist add|remove|list [user] [role]`.
 - Whitelisted users bypass: anti-spam, anti-phishing, and escalation.
 - Whitelisted users are subject to anti-nuke's `exempt_threshold` instead of the regular thresholds.
 - The whitelist is stored per-guild in the `whitelist_users` and `whitelist_roles` tables.
+
+## Role Hierarchy Protection
+
+The bot never applies sanctions (ban, timeout, quarantine, nuke timeout) to members whose highest role is **equal to or above** the bot's highest role. If such an action is attempted, it is silently skipped and logged as `action_skipped: user role above bot`. This mirrors Discord's native permission model — give the bot a dedicated role and place it above the roles you want it to moderate.
 
 ---
 
@@ -460,6 +470,7 @@ The dashboard is a server-side rendered web UI accessible at `dashboard.addr` (d
 | Route | Description |
 |---|---|
 | `/` | Public landing page |
+| `/legal` | Legal — mentions légales, RGPD, CGU, CGV |
 | `/login` | Login page |
 | `/auth/login` | OAuth2 redirect |
 | `/auth/callback` | OAuth2 callback |

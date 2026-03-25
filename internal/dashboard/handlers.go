@@ -197,6 +197,10 @@ func (s *Server) handleLanding(w http.ResponseWriter, r *http.Request) {
 	s.renderStandalone(w, "landing", landingData{})
 }
 
+func (s *Server) handleLegal(w http.ResponseWriter, r *http.Request) {
+	s.renderPage(w, "legal", s.base(r, "legal"))
+}
+
 func (s *Server) handleLoginPage(w http.ResponseWriter, r *http.Request) {
 	// Already logged in → go to app
 	user, _ := s.loadUser(r)

@@ -10,15 +10,12 @@ import (
 
 	"sentinel-adaptive/internal/analytics"
 	"sentinel-adaptive/internal/config"
-	"sentinel-adaptive/internal/modules/altaccount"
 	"sentinel-adaptive/internal/modules/antinuke"
-	"sentinel-adaptive/internal/modules/shadowmute"
 	"sentinel-adaptive/internal/modules/antiphishing"
 	"sentinel-adaptive/internal/modules/antiraid"
 	"sentinel-adaptive/internal/modules/antispam"
 	"sentinel-adaptive/internal/modules/audit"
 	"sentinel-adaptive/internal/modules/behavior"
-	"sentinel-adaptive/internal/modules/escalation"
 	"sentinel-adaptive/internal/modules/verification"
 	"sentinel-adaptive/internal/playbook"
 	"sentinel-adaptive/internal/risk"
@@ -46,9 +43,6 @@ type Bot struct {
 	antinukeExempt *antinuke.Module
 	behavior       *behavior.Module
 	verify         *verification.Module
-	escalation     *escalation.Module
-	altaccount     *altaccount.Module
-	shadowmute     *shadowmute.Module
 	auditAgg       map[string]*auditAggregate
 	auditAggMu     sync.Mutex
 	warnAgg        map[string]*warningAggregate
@@ -57,8 +51,10 @@ type Bot struct {
 	detectAggMu    sync.Mutex
 	lockdownMu     sync.Mutex
 	lockdownMap    map[string]*lockdownSnapshot
-	riskActionMu   sync.Mutex
-	riskActionAgg  map[string]*riskActionAggregate
+}
+
+func (b *Bot) shouldSuppressRiskAction(s string, param2 string, param3 string, false bool) any {
+	panic("unimplemented")
 }
 
 type auditAggregate struct {
@@ -120,26 +116,35 @@ func New(cfg config.Config, logger *zap.Logger, store *storage.Store, riskEngine
 		auditAgg:    make(map[string]*auditAggregate),
 		warnAgg:     make(map[string]*warningAggregate),
 		detectAgg:   make(map[string]*detectionAggregate),
-		lockdownMap:   make(map[string]*lockdownSnapshot),
-		riskActionAgg: make(map[string]*riskActionAggregate),
+		lockdownMap: make(map[string]*lockdownSnapshot),
 	}
 
 	b.antispam = antispam.New(cfg.Thresholds, riskEngine, auditLogger)
-	b.antiraid = antiraid.New(cfg.Thresholds, playbookEngine, auditLogger)
+	b.antiraid = antiraid.New(playbookEngine, auditLogger)
 	b.antiphish = antiphishing.New(riskEngine, auditLogger)
 	b.antinuke = antinuke.New(time.Duration(cfg.Nuke.WindowSeconds) * time.Second)
 	b.antinukeExempt = antinuke.New(time.Duration(cfg.Nuke.ExemptWindowSeconds) * time.Second)
 	b.behavior = behavior.New()
-	b.verify = verification.New(cfg.Onboarding, store, auditLogger)
-	b.escalation = escalation.New(cfg.Escalation, store, auditLogger)
-	b.altaccount = altaccount.New(cfg.AltAccount, store, riskEngine, auditLogger, b.escalation)
-	b.shadowmute = shadowmute.New(cfg.ShadowMute, store, auditLogger)
+	b.verify = verification.New()
 	if b.audit != nil {
 		b.audit.SetNotifier(func(ctx context.Context, entry storage.AuditLog) {
 			if !b.cfg.Notifications.AuditToChannel {
 				return
 			}
 			b.notifyAudit(ctx, entry)
+		})
+		b.audit.SetUserResolver(func(guildID, userID string) string {
+			member := b.memberForUser(guildID, userID)
+			if member == nil {
+				return ""
+			}
+			if member.Nick != "" {
+				return member.Nick + " (" + member.User.Username + ")"
+			}
+			if member.User != nil {
+				return member.User.Username
+			}
+			return ""
 		})
 	}
 
@@ -148,7 +153,6 @@ func New(cfg config.Config, logger *zap.Logger, store *storage.Store, riskEngine
 
 func (b *Bot) Start() error {
 	b.session.AddHandler(b.onReady)
-	b.session.AddHandler(b.onGuildCreate)
 	b.session.AddHandler(b.onMessageCreate)
 	b.session.AddHandler(b.onGuildMemberAdd)
 	b.session.AddHandler(b.onChannelCreate)
@@ -190,118 +194,16 @@ func (b *Bot) onReady(session *discordgo.Session, event *discordgo.Ready) {
 	b.logger.Info("discord ready", zap.String("user", session.State.User.Username))
 }
 
-// onGuildCreate fires when the bot joins a guild or reconnects.
-// It auto-provisions the "Vérifié" role and the "bastion-logs" private channel
-// if they are not already recorded in guild_settings for that guild.
-func (b *Bot) onGuildCreate(session *discordgo.Session, event *discordgo.GuildCreate) {
-	if event.Guild == nil || event.Guild.ID == "" {
-		return
-	}
-	ctx := context.Background()
-	guildID := event.Guild.ID
-	settings := b.guildSettings(ctx, guildID)
-	changed := false
-
-	// ── Detect or create the default member role ────────────────────────────
-	if settings.OnboardingRoleID == "" {
-		if detected := detectDefaultRole(session, guildID); detected != "" {
-			// Re-use the most common safe role already on the server.
-			settings.OnboardingRoleID = detected
-			changed = true
-			b.logger.Info("default member role detected", zap.String("guild", guildID), zap.String("role", detected))
-		} else {
-			// No suitable role found — create a fresh "Vérifié" role.
-			green := 0x57F287
-			role, err := session.GuildRoleCreate(guildID, &discordgo.RoleParams{
-				Name:  "Vérifié",
-				Color: &green,
-			})
-			if err != nil {
-				b.logger.Warn("onboarding role create failed", zap.String("guild", guildID), zap.Error(err))
-			} else {
-				settings.OnboardingRoleID = role.ID
-				changed = true
-				b.logger.Info("onboarding role created", zap.String("guild", guildID), zap.String("role", role.ID))
-			}
-		}
-	}
-
-	// ── Detect or create the admin log channel ───────────────────────────────
-	if settings.ShadowmuteLogChannelID == "" {
-		var botID string
-		if session.State != nil && session.State.User != nil {
-			botID = session.State.User.ID
-		}
-
-		if existing := detectLogChannel(session, guildID, botID); existing != "" {
-			// Re-use an existing channel that already contains bot log messages.
-			settings.ShadowmuteLogChannelID = existing
-			changed = true
-			b.logger.Info("existing log channel detected", zap.String("guild", guildID), zap.String("channel", existing))
-		} else {
-			// Create a new channel visible only to server administrators.
-			// Deny @everyone VIEW_CHANNEL; Discord's Administrator permission
-			// bypasses channel overwrites automatically, so all admins see it.
-			overwrites := []*discordgo.PermissionOverwrite{
-				{
-					ID:   guildID,
-					Type: discordgo.PermissionOverwriteTypeRole,
-					Deny: discordgo.PermissionViewChannel,
-				},
-			}
-			if botID != "" {
-				overwrites = append(overwrites, &discordgo.PermissionOverwrite{
-					ID:   botID,
-					Type: discordgo.PermissionOverwriteTypeMember,
-					Allow: discordgo.PermissionViewChannel |
-						discordgo.PermissionSendMessages |
-						discordgo.PermissionReadMessageHistory |
-						discordgo.PermissionEmbedLinks,
-				})
-			}
-			ch, err := session.GuildChannelCreateComplex(guildID, discordgo.GuildChannelCreateData{
-				Name:                 "bastion-logs",
-				Type:                 discordgo.ChannelTypeGuildText,
-				Topic:                "Logs privés Bastion — réservé aux administrateurs",
-				PermissionOverwrites: overwrites,
-			})
-			if err != nil {
-				b.logger.Warn("bastion-logs channel create failed", zap.String("guild", guildID), zap.Error(err))
-			} else {
-				settings.ShadowmuteLogChannelID = ch.ID
-				changed = true
-				b.logger.Info("bastion-logs channel created", zap.String("guild", guildID), zap.String("channel", ch.ID))
-			}
-		}
-	}
-
-	if changed {
-		if err := b.store.UpsertGuildSettings(ctx, settings); err != nil {
-			b.logger.Warn("guild settings upsert after provision failed", zap.String("guild", guildID), zap.Error(err))
-		}
-	}
-}
-
 func (b *Bot) onMessageCreate(session *discordgo.Session, msg *discordgo.MessageCreate) {
 	if msg.Author == nil || msg.Author.Bot {
 		return
 	}
+	if msg.GuildID == "" {
+		return
+	}
 
 	ctx := context.Background()
-
-	// DM: only route to onboarding, nothing else.
-	if msg.GuildID == "" {
-		b.verify.HandleDM(ctx, session, msg)
-		return
-	}
-
 	settings := b.guildSettings(ctx, msg.GuildID)
-
-	// Shadow mute has highest priority: delete silently before any other module runs.
-	if b.shadowmute.HandleMessage(ctx, session, msg, settings.ShadowmuteLogChannelID) {
-		return
-	}
-
 	auditOnly := b.isAuditMode(settings)
 
 	allowlist, blocklist := b.getDomainLists(ctx, msg.GuildID)
@@ -329,12 +231,11 @@ func (b *Bot) onGuildMemberAdd(session *discordgo.Session, event *discordgo.Guil
 		return
 	}
 	ctx := context.Background()
-	if b.antiraid.HandleJoin(ctx, session, event) {
+	_ = session
+	settings := b.guildSettings(ctx, event.GuildID)
+	if b.antiraid.HandleJoin(ctx, session, event, settings.RaidJoins, settings.RaidWindowSeconds) {
 		b.enterLockdown(ctx, event.GuildID, "anti_raid")
 	}
-	b.altaccount.HandleMemberAdd(ctx, session, event)
-	settings := b.guildSettings(ctx, event.GuildID)
-	b.verify.HandleMemberAdd(ctx, session, event, settings.OnboardingRoleID)
 }
 
 func (b *Bot) onChannelCreate(session *discordgo.Session, event *discordgo.ChannelCreate) {
@@ -405,7 +306,6 @@ func (b *Bot) onGuildBanAdd(session *discordgo.Session, event *discordgo.GuildBa
 		return
 	}
 	ctx := context.Background()
-	_ = b.store.AddBannedUser(ctx, event.GuildID, event.User.ID, event.User.Username)
 	actorID := b.resolveAuditActor(event.GuildID, discordgo.AuditLogActionMemberBanAdd, event.User.ID)
 	b.handleNukeAction(ctx, event.GuildID, actorID, "ban_add", event.User.ID)
 }
@@ -518,6 +418,10 @@ func (b *Bot) applyNukeSanction(ctx context.Context, guildID, userID string) {
 	}
 	if !b.cfg.Actions.Enabled {
 		b.audit.Log(ctx, audit.LevelInfo, guildID, userID, "enforcement_disabled", "nuke sanction blocked")
+		return
+	}
+	if b.isOutOfReach(guildID, userID) {
+		b.audit.Log(ctx, audit.LevelInfo, guildID, userID, "action_skipped", "user role above bot")
 		return
 	}
 	minutes := b.cfg.Actions.TimeoutMinutes
@@ -689,6 +593,47 @@ func (b *Bot) isWhitelisted(ctx context.Context, guildID, userID string) bool {
 	return false
 }
 
+// isOutOfReach retourne true si le rôle le plus haut du membre cible est
+// supérieur ou égal à celui du bot — dans ce cas le bot ne peut pas agir.
+func (b *Bot) isOutOfReach(guildID, userID string) bool {
+	if b.session == nil || b.session.State == nil || b.session.State.User == nil {
+		return false
+	}
+	guild, err := b.session.State.Guild(guildID)
+	if err != nil || guild == nil {
+		guild, err = b.session.Guild(guildID)
+		if err != nil || guild == nil {
+			return false
+		}
+	}
+
+	rolePos := make(map[string]int, len(guild.Roles))
+	for _, r := range guild.Roles {
+		rolePos[r.ID] = r.Position
+	}
+
+	highestRole := func(member *discordgo.Member) int {
+		max := 0
+		for _, roleID := range member.Roles {
+			if pos, ok := rolePos[roleID]; ok && pos > max {
+				max = pos
+			}
+		}
+		return max
+	}
+
+	botMember := b.memberForUser(guildID, b.session.State.User.ID)
+	if botMember == nil {
+		return false
+	}
+	targetMember := b.memberForUser(guildID, userID)
+	if targetMember == nil {
+		return false
+	}
+
+	return highestRole(targetMember) >= highestRole(botMember)
+}
+
 func (b *Bot) memberForUser(guildID, userID string) *discordgo.Member {
 	member, err := b.session.State.Member(guildID, userID)
 	if err == nil && member != nil {
@@ -731,11 +676,6 @@ func (b *Bot) applyRiskActions(ctx context.Context, guildID, userID string, scor
 	trustScore := b.trust.GetScore(guildID, userID)
 	effective := b.risk.EffectiveScore(score, trustScore)
 
-	// Centralized escalation ladder — additive, runs before legacy action logic.
-	if !b.isWhitelisted(ctx, guildID, userID) {
-		b.escalation.HandleScore(ctx, b.session, guildID, userID, effective, auditOnly)
-	}
-
 	actions := b.cfg.Actions
 	action := ""
 	level := audit.LevelInfo
@@ -773,9 +713,14 @@ func (b *Bot) applyRiskActions(ctx context.Context, guildID, userID string, scor
 		return
 	}
 
+	if b.isOutOfReach(guildID, userID) {
+		b.audit.Log(ctx, audit.LevelInfo, guildID, userID, "action_skipped", "user role above bot")
+		return
+	}
+
 	switch action {
 	case "ban":
-		if err := b.session.GuildBanCreateWithReason(guildID, userID, "Bastion risk ban", 0); err != nil {
+		if err := b.session.GuildBanCreateWithReason(guildID, userID, "Sentinel Adaptive risk ban", 0); err != nil {
 			b.audit.Log(ctx, audit.LevelWarn, guildID, userID, "action_failed", "ban failed")
 			b.sendSecurityEmbed(ctx, guildID, b.buildErrorEmbed(lang, userID, b.t(lang, "action_ban_failed"), err))
 		}
@@ -1538,116 +1483,4 @@ func (b *Bot) auditToChannel(ctx context.Context, guildID, message string) {
 
 func formatReport(report analytics.Report) string {
 	return fmt.Sprintf("Total: %d | INFO: %d | WARN: %d | CRIT: %d", report.Total, report.ByLevel[audit.LevelInfo], report.ByLevel[audit.LevelWarn], report.ByLevel[audit.LevelCrit])
-}
-
-// detectDefaultRole samples up to 1 000 guild members and returns the most
-// common role that doesn't carry any dangerous permission (admin, ban, kick,
-// manage-server, manage-roles). The role must appear on at least 50 % of the
-// sampled members to be considered the "default member" role.
-// Returns "" when no suitable role is found.
-func detectDefaultRole(session *discordgo.Session, guildID string) string {
-	const (
-		sampleLimit  = 1000
-		minPenetration = 50 // percent of sampled members that must have the role
-	)
-
-	// Permissions that disqualify a role from being a "plain member" role.
-	const dangerousPerms = discordgo.PermissionAdministrator |
-		discordgo.PermissionBanMembers |
-		discordgo.PermissionKickMembers |
-		discordgo.PermissionManageServer |
-		discordgo.PermissionManageRoles
-
-	members, err := session.GuildMembers(guildID, "", sampleLimit)
-	if err != nil || len(members) < 2 {
-		return ""
-	}
-
-	roles, err := session.GuildRoles(guildID)
-	if err != nil {
-		return ""
-	}
-
-	// Build a permission map for quick lookup, and exclude @everyone (same ID as guild).
-	rolePerms := make(map[string]int64, len(roles))
-	for _, r := range roles {
-		if r.ID != guildID {
-			rolePerms[r.ID] = r.Permissions
-		}
-	}
-
-	// Count how many members carry each safe role.
-	counts := make(map[string]int)
-	for _, m := range members {
-		for _, rID := range m.Roles {
-			perms, known := rolePerms[rID]
-			if !known {
-				continue
-			}
-			if perms&dangerousPerms == 0 {
-				counts[rID]++
-			}
-		}
-	}
-
-	threshold := len(members) * minPenetration / 100
-
-	var bestRole string
-	var bestCount int
-	for rID, cnt := range counts {
-		if cnt > bestCount {
-			bestCount = cnt
-			bestRole = rID
-		}
-	}
-
-	if bestCount < threshold {
-		return ""
-	}
-	return bestRole
-}
-
-// detectLogChannel scans the guild's text channels for one whose name contains
-// a log-related keyword and that already has at least one message from the bot.
-// Returns the channel ID if found, or "" if none qualifies.
-func detectLogChannel(session *discordgo.Session, guildID, botID string) string {
-	logKeywords := []string{"log", "logs", "audit", "bastion", "security"}
-
-	channels, err := session.GuildChannels(guildID)
-	if err != nil {
-		return ""
-	}
-
-	for _, ch := range channels {
-		if ch.Type != discordgo.ChannelTypeGuildText {
-			continue
-		}
-		name := strings.ToLower(ch.Name)
-		matched := false
-		for _, kw := range logKeywords {
-			if strings.Contains(name, kw) {
-				matched = true
-				break
-			}
-		}
-		if !matched {
-			continue
-		}
-
-		// Check whether the bot has already posted in this channel.
-		if botID == "" {
-			// Can't verify bot authorship without a bot ID; accept channel by name.
-			return ch.ID
-		}
-		msgs, err := session.ChannelMessages(ch.ID, 50, "", "", "")
-		if err != nil {
-			continue
-		}
-		for _, m := range msgs {
-			if m.Author != nil && m.Author.ID == botID {
-				return ch.ID
-			}
-		}
-	}
-	return ""
 }

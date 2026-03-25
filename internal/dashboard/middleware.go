@@ -2,6 +2,7 @@ package dashboard
 
 import (
 	"net/http"
+	"strings"
 )
 
 // requireAuth wraps a handler and redirects to /login if no valid session.
@@ -17,13 +18,30 @@ func (s *Server) requireAuth(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-// requireAdmin wraps a handler and returns 403 if the user is not the admin.
+// requireAdmin protects the admin panel with three layers:
+//  1. Valid session + Discord ID matches ADMIN_DISCORD_USER_ID
+//  2. IP allowlist — if ADMIN_ALLOWED_IPS is set, the request IP must be listed
+//  3. Returns 404 (not 403) so the page appears non-existent to outsiders
 func (s *Server) requireAdmin(next http.HandlerFunc) http.HandlerFunc {
 	return s.requireAuth(func(w http.ResponseWriter, r *http.Request) {
 		user := currentUser(r)
 		if user == nil || user.UserID != s.cfg.AdminDiscordUserID {
-			http.Error(w, "Forbidden", http.StatusForbidden)
+			http.NotFound(w, r)
 			return
+		}
+		if s.cfg.AdminAllowedIPs != "" {
+			ip := clientIP(r)
+			allowed := false
+			for _, allowedIP := range strings.Split(s.cfg.AdminAllowedIPs, ",") {
+				if strings.TrimSpace(allowedIP) == ip {
+					allowed = true
+					break
+				}
+			}
+			if !allowed {
+				http.NotFound(w, r)
+				return
+			}
 		}
 		next(w, r)
 	})

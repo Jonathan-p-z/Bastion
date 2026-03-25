@@ -30,6 +30,7 @@ type Server struct {
 	logger  *zap.Logger
 	mux     *http.ServeMux
 	oauth2  *oauth2.Config
+	rl      *rateLimiter
 }
 
 type contextKey string
@@ -43,6 +44,7 @@ func New(cfg config.Config, store *storage.Store, discord *discordgo.Session, lo
 		discord: discord,
 		logger:  logger,
 		mux:     http.NewServeMux(),
+		rl:      newRateLimiter(),
 		oauth2: &oauth2.Config{
 			ClientID:     cfg.Dashboard.DiscordClientID,
 			ClientSecret: cfg.Dashboard.DiscordClientSecret,
@@ -59,7 +61,25 @@ func New(cfg config.Config, store *storage.Store, discord *discordgo.Session, lo
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.securityHeaders(w)
 	s.mux.ServeHTTP(w, r)
+}
+
+// securityHeaders adds hardening HTTP headers to every response.
+func (s *Server) securityHeaders(w http.ResponseWriter) {
+	h := w.Header()
+	h.Set("X-Content-Type-Options", "nosniff")
+	h.Set("X-Frame-Options", "DENY")
+	h.Set("Referrer-Policy", "strict-origin-when-cross-origin")
+	h.Set("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+	h.Set("Content-Security-Policy",
+		"default-src 'self'; "+
+			"script-src 'self'; "+
+			"style-src 'self' 'unsafe-inline'; "+
+			"img-src 'self' https://cdn.discordapp.com data:; "+
+			"font-src 'self'; "+
+			"connect-src 'self'; "+
+			"frame-ancestors 'none'")
 }
 
 func init() {
@@ -80,9 +100,9 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("/legal", s.handleLegal)
 	s.mux.HandleFunc("/login", s.handleLoginPage)
 
-	// OAuth2
-	s.mux.HandleFunc("/auth/login", s.handleAuthLogin)
-	s.mux.HandleFunc("/auth/callback", s.handleAuthCallback)
+	// OAuth2 — rate limited
+	s.mux.HandleFunc("/auth/login", s.limitAuth(s.handleAuthLogin))
+	s.mux.HandleFunc("/auth/callback", s.limitAuth(s.handleAuthCallback))
 	s.mux.HandleFunc("/auth/logout", s.handleAuthLogout)
 
 	// App — requires auth
@@ -93,8 +113,12 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("/app/guild/modules", s.requireAuth(s.handleGuildModules))
 	s.mux.HandleFunc("/app/billing", s.requireAuth(s.handleBilling))
 
-	// Admin — requires admin user
-	s.mux.HandleFunc("/admin", s.requireAdmin(s.handleAdmin))
+	// Admin — requires admin user + optional secret path
+	adminPath := "/admin"
+	if s.cfg.AdminPathSecret != "" {
+		adminPath = "/admin/" + s.cfg.AdminPathSecret
+	}
+	s.mux.HandleFunc(adminPath, s.requireAdmin(s.handleAdmin))
 }
 
 // ── Template rendering ────────────────────────────────

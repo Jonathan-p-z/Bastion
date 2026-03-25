@@ -80,11 +80,20 @@ type billingData struct {
 	Plans         []billingPlan
 }
 
+type adminGuildInfo struct {
+	ID          string
+	Name        string
+	Icon        string
+	MemberCount int
+	Plan        string
+}
+
 type adminData struct {
 	pageData
 	TotalGuilds int
 	PlanCounts  map[string]int
 	TotalUsers  int
+	BotGuilds   []adminGuildInfo
 }
 
 // ── Helpers ───────────────────────────────────────────
@@ -107,15 +116,28 @@ func (s *Server) resolveGuild(r *http.Request, user *storage.WebUser) (guildInfo
 	if guildID == "" {
 		return guildInfo{}, false
 	}
+
+	const manageServer = int64(0x20)
+	const adminPerm = int64(0x8)
+
+	// The guild must be in the user's Discord guild list AND the user must
+	// have Manage Server, Administrator, or be the owner.
 	guilds := s.getUserGuilds(user)
-	g := guildInfo{ID: guildID, Name: guildID}
-	for _, dg := range guilds {
-		if dg.ID == guildID {
-			g.Name = dg.Name
-			g.Icon = dg.Icon
+	var matched *discordGuild
+	for i := range guilds {
+		if guilds[i].ID == guildID {
+			matched = &guilds[i]
 			break
 		}
 	}
+	if matched == nil {
+		return guildInfo{}, false
+	}
+	if !matched.Owner && matched.Permissions&manageServer == 0 && matched.Permissions&adminPerm == 0 {
+		return guildInfo{}, false
+	}
+
+	g := guildInfo{ID: guildID, Name: matched.Name, Icon: matched.Icon}
 	// Check if Bastion is installed
 	if s.discord != nil {
 		if _, err := s.discord.State.Guild(guildID); err == nil {
@@ -398,9 +420,28 @@ func (s *Server) handleAdmin(w http.ResponseWriter, r *http.Request) {
 		planCounts = map[string]int{}
 	}
 
+	var botGuilds []adminGuildInfo
+	if s.discord != nil {
+		for _, g := range s.discord.State.Guilds {
+			info := adminGuildInfo{
+				ID:          g.ID,
+				Name:        g.Name,
+				Icon:        g.Icon,
+				MemberCount: g.MemberCount,
+			}
+			if sub, err := s.store.GetSubscription(r.Context(), g.ID); err == nil && sub != nil {
+				info.Plan = sub.Plan
+			} else {
+				info.Plan = "free"
+			}
+			botGuilds = append(botGuilds, info)
+		}
+	}
+
 	s.renderPage(w, "admin", adminData{
 		pageData:    s.base(r, "admin"),
 		TotalGuilds: totalGuilds,
 		PlanCounts:  planCounts,
+		BotGuilds:   botGuilds,
 	})
 }

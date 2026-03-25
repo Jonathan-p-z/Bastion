@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // tierLimits defines the maximum number of simultaneous open tickets per guild plan.
@@ -111,7 +113,7 @@ func EnsureLogChannel(session *discordgo.Session, guildID string) (string, error
 // CreateTicketChannel creates a ticket text channel inside the tickets category.
 // Staff visibility is inherited from the category permissions; only two explicit
 // overwrites are added: @everyone deny, and the ticket owner allow.
-func CreateTicketChannel(session *discordgo.Session, guildID, categoryID, userID, username string) (*discordgo.Channel, error) {
+func CreateTicketChannel(session *discordgo.Session, guildID, categoryID, userID, username string, logger *zap.Logger) (*discordgo.Channel, error) {
 	name := "ticket-" + sanitizeUsername(username)
 
 	perms := []*discordgo.PermissionOverwrite{
@@ -129,6 +131,20 @@ func CreateTicketChannel(session *discordgo.Session, guildID, categoryID, userID
 		},
 	}
 
+	botID := ""
+	if session.State != nil && session.State.User != nil {
+		botID = session.State.User.ID
+	}
+
+	logger.Info("ticket channel create — pre-API call",
+		zap.String("guild_id", guildID),
+		zap.String("category_id", categoryID),
+		zap.String("bot_id", botID),
+		zap.String("owner_id", userID),
+		zap.String("channel_name", name),
+		zap.Array("overwrites", zapOverwrites(perms)),
+	)
+
 	ch, err := session.GuildChannelCreateComplex(guildID, discordgo.GuildChannelCreateData{
 		Name:                 name,
 		Type:                 discordgo.ChannelTypeGuildText,
@@ -139,6 +155,20 @@ func CreateTicketChannel(session *discordgo.Session, guildID, categoryID, userID
 		return nil, fmt.Errorf("create ticket channel: %w", err)
 	}
 	return ch, nil
+}
+
+// zapOverwrites implements zap.ArrayMarshaler to log permission overwrites.
+type zapOverwrites []*discordgo.PermissionOverwrite
+
+func (z zapOverwrites) MarshalLogArray(enc zapcore.ArrayEncoder) error {
+	for _, o := range z {
+		t := "role"
+		if o.Type == discordgo.PermissionOverwriteTypeMember {
+			t = "member"
+		}
+		enc.AppendString(fmt.Sprintf("{id:%s type:%s allow:%d deny:%d}", o.ID, t, o.Allow, o.Deny))
+	}
+	return nil
 }
 
 // SendWelcomeMessage posts the welcome embed with action buttons into the ticket channel.

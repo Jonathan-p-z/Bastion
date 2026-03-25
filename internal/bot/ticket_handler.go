@@ -91,7 +91,7 @@ func (b *Bot) handleTicketCommand(ctx context.Context, session *discordgo.Sessio
 		username = interaction.Member.User.Username
 	}
 
-	ch, err := tickets.CreateTicketChannel(session, interaction.GuildID, categoryID, userID, username)
+	ch, err := tickets.CreateTicketChannel(session, interaction.GuildID, categoryID, userID, username, b.logger)
 	if err != nil {
 		b.logger.Sugar().Errorw("create ticket channel", "err", err)
 		b.respondEmbed(session, interaction,

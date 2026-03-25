@@ -14,6 +14,23 @@ import (
 	"go.uber.org/zap"
 )
 
+func interactionActorID(interaction *discordgo.InteractionCreate) string {
+	if interaction.Member != nil && interaction.Member.User != nil {
+		return interaction.Member.User.ID
+	}
+	return ""
+}
+
+func interactionActorName(interaction *discordgo.InteractionCreate) string {
+	if interaction.Member == nil || interaction.Member.User == nil {
+		return "unknown"
+	}
+	if interaction.Member.Nick != "" {
+		return interaction.Member.Nick + " (" + interaction.Member.User.Username + ")"
+	}
+	return interaction.Member.User.Username
+}
+
 func (b *Bot) onInteractionCreate(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
 	if interaction.Type != discordgo.InteractionApplicationCommand {
 		return
@@ -118,6 +135,7 @@ func (b *Bot) handleSecurityCommand(ctx context.Context, session *discordgo.Sess
 			b.respondEmbed(session, interaction, b.commandEmbed(b.t(lang, "security_mode_title"), b.t(lang, "error_failed"), b.cfg.Notifications.EmbedColors.Error, nil), true)
 			return
 		}
+		b.audit.Log(ctx, audit.LevelInfo, interaction.GuildID, interactionActorID(interaction), "config_change", fmt.Sprintf("mode=%s by %s", value, interactionActorName(interaction)))
 		fields := []*discordgo.MessageEmbedField{{Name: b.t(lang, "field_mode"), Value: value, Inline: true}}
 		b.respondEmbed(session, interaction, b.commandEmbed(b.t(lang, "security_mode_title"), b.t(lang, "security_mode_updated"), b.cfg.Notifications.EmbedColors.Action, fields), true)
 	case "preset":
@@ -132,6 +150,7 @@ func (b *Bot) handleSecurityCommand(ctx context.Context, session *discordgo.Sess
 			b.respondEmbed(session, interaction, b.commandEmbed(b.t(lang, "security_preset_title"), b.t(lang, "error_failed"), b.cfg.Notifications.EmbedColors.Error, nil), true)
 			return
 		}
+		b.audit.Log(ctx, audit.LevelInfo, interaction.GuildID, interactionActorID(interaction), "config_change", fmt.Sprintf("preset=%s by %s", value, interactionActorName(interaction)))
 		fields := []*discordgo.MessageEmbedField{{Name: b.t(lang, "field_preset"), Value: value, Inline: true}}
 		b.respondEmbed(session, interaction, b.commandEmbed(b.t(lang, "security_preset_title"), b.t(lang, "security_preset_updated"), b.cfg.Notifications.EmbedColors.Action, fields), true)
 	case "lockdown":
@@ -145,6 +164,7 @@ func (b *Bot) handleSecurityCommand(ctx context.Context, session *discordgo.Sess
 		} else {
 			b.restoreLockdown(ctx, interaction.GuildID, "manual")
 		}
+		b.audit.Log(ctx, audit.LevelWarn, interaction.GuildID, interactionActorID(interaction), "config_change", fmt.Sprintf("lockdown=%s by %s", value, interactionActorName(interaction)))
 		fields := []*discordgo.MessageEmbedField{{Name: b.t(lang, "field_lockdown"), Value: value, Inline: true}}
 		b.respondEmbed(session, interaction, b.commandEmbed(b.t(lang, "security_lockdown_title"), b.t(lang, "security_lockdown_updated"), b.cfg.Notifications.EmbedColors.Action, fields), true)
 	case "rules":
@@ -189,6 +209,7 @@ func (b *Bot) handleSecurityCommand(ctx context.Context, session *discordgo.Sess
 			b.respondEmbed(session, interaction, b.commandEmbed(b.t(lang, "security_language_title"), b.t(lang, "error_failed"), b.cfg.Notifications.EmbedColors.Error, nil), true)
 			return
 		}
+		b.audit.Log(ctx, audit.LevelInfo, interaction.GuildID, interactionActorID(interaction), "config_change", fmt.Sprintf("language=%s by %s", value, interactionActorName(interaction)))
 		fields := []*discordgo.MessageEmbedField{{Name: b.t(value, "field_language"), Value: value, Inline: true}}
 		b.respondEmbed(session, interaction, b.commandEmbed(b.t(value, "security_language_title"), b.t(value, "security_language_updated"), b.cfg.Notifications.EmbedColors.Action, fields), true)
 	case "test":
@@ -326,10 +347,12 @@ func (b *Bot) handleNukeCommand(ctx context.Context, session *discordgo.Session,
 	case "enable":
 		settings.NukeEnabled = true
 		_ = b.store.UpsertGuildSettings(ctx, settings)
+		b.audit.Log(ctx, audit.LevelInfo, interaction.GuildID, interactionActorID(interaction), "config_change", fmt.Sprintf("nuke=enabled by %s", interactionActorName(interaction)))
 		b.respondEmbed(session, interaction, b.commandEmbed(b.t(lang, "security_nuke_title"), b.t(lang, "security_nuke_updated"), b.cfg.Notifications.EmbedColors.Action, nil), true)
 	case "disable":
 		settings.NukeEnabled = false
 		_ = b.store.UpsertGuildSettings(ctx, settings)
+		b.audit.Log(ctx, audit.LevelInfo, interaction.GuildID, interactionActorID(interaction), "config_change", fmt.Sprintf("nuke=disabled by %s", interactionActorName(interaction)))
 		b.respondEmbed(session, interaction, b.commandEmbed(b.t(lang, "security_nuke_title"), b.t(lang, "security_nuke_updated"), b.cfg.Notifications.EmbedColors.Action, nil), true)
 	case "set":
 		if key == "" {
@@ -362,6 +385,7 @@ func (b *Bot) handleNukeCommand(ctx context.Context, session *discordgo.Session,
 			return
 		}
 		_ = b.store.UpsertGuildSettings(ctx, settings)
+		b.audit.Log(ctx, audit.LevelInfo, interaction.GuildID, interactionActorID(interaction), "config_change", fmt.Sprintf("nuke %s=%d by %s", key, value, interactionActorName(interaction)))
 		b.respondEmbed(session, interaction, b.commandEmbed(b.t(lang, "security_nuke_title"), b.t(lang, "security_nuke_updated"), b.cfg.Notifications.EmbedColors.Action, nil), true)
 	default:
 		b.respondEmbed(session, interaction, b.commandEmbed(b.t(lang, "security_nuke_title"), b.t(lang, "error_nuke_action"), b.cfg.Notifications.EmbedColors.Error, nil), true)

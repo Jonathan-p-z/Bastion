@@ -1,0 +1,296 @@
+{{define "content"}}
+{{block "breadcrumb" .}}
+<span class="current">Mentions légales &amp; CGU</span>
+{{end}}
+
+<div class="page-header">
+  <div class="page-title">Informations légales</div>
+  <div class="page-subtitle">Mentions légales, politique de confidentialité, CGU et CGV de Bastion.</div>
+</div>
+
+<!-- Navigation par ancres -->
+<div class="card mb-6">
+  <div style="display:flex;flex-wrap:wrap;gap:8px;padding:4px 0">
+    <a href="#mentions-legales" class="btn btn-secondary btn-sm">Mentions légales</a>
+    <a href="#privacy" class="btn btn-secondary btn-sm">Confidentialité</a>
+    <a href="#cgu" class="btn btn-secondary btn-sm">CGU</a>
+    <a href="#cgv" class="btn btn-secondary btn-sm">CGV</a>
+  </div>
+</div>
+
+<!-- Mentions légales -->
+<div class="card mb-6" id="mentions-legales">
+  <div class="card-header">
+    <span class="card-title">Mentions légales</span>
+  </div>
+
+  <div class="legal-section">
+    <h3 class="legal-heading">Éditeur du site</h3>
+    <ul class="legal-list">
+      <li><strong>Nom :</strong> Perez Jonathan</li>
+      <li><strong>Email :</strong> <a href="mailto:yaiito@proton.me">yaiito@proton.me</a></li>
+      <li><strong>Site web :</strong> <a href="https://dashboard-bastion.yaiito.fr" target="_blank">https://dashboard-bastion.yaiito.fr</a></li>
+    </ul>
+
+    <h3 class="legal-heading">Hébergement</h3>
+    <p class="legal-text">
+      Le service est hébergé sur une infrastructure personnelle située en France,
+      protégée par Cloudflare (Cloudflare Inc., 101 Townsend St, San Francisco, CA 94107, USA).
+    </p>
+
+    <h3 class="legal-heading">Propriété intellectuelle</h3>
+    <p class="legal-text">
+      Tout le contenu de ce site (code, textes, visuels) est la propriété exclusive de yaiito.
+      Toute reproduction sans autorisation écrite est interdite.
+    </p>
+  </div>
+</div>
+
+<!-- Politique de confidentialité -->
+<div class="card mb-6" id="privacy">
+  <div class="card-header">
+    <span class="card-title">Politique de confidentialité</span>
+    <span class="badge badge-info">Mise à jour : mars 2026</span>
+  </div>
+
+  <div class="legal-section">
+    <h3 class="legal-heading">1. Responsable du traitement</h3>
+    <p class="legal-text">yaiito — <a href="mailto:yaiito@proton.me">yaiito@proton.me</a></p>
+
+    <h3 class="legal-heading">2. Données collectées</h3>
+    <p class="legal-text">Dans le cadre de l'utilisation de Bastion, nous collectons :</p>
+    <ul class="legal-list">
+      <li>Votre identifiant Discord (User ID)</li>
+      <li>Les identifiants des serveurs Discord où Bastion est actif (Guild ID)</li>
+      <li>Les événements de sécurité associés (timestamps, type d'événement)</li>
+      <li>Votre adresse email via Stripe lors d'un abonnement payant</li>
+    </ul>
+    <p class="legal-text">Nous ne collectons <strong>pas</strong> : messages privés, mots de passe, données bancaires.</p>
+
+    <h3 class="legal-heading">3. Finalité du traitement</h3>
+    <p class="legal-text">Les données sont utilisées exclusivement pour :</p>
+    <ul class="legal-list">
+      <li>Assurer le fonctionnement du bot de sécurité</li>
+      <li>Gérer les abonnements et la facturation</li>
+      <li>Améliorer la détection des menaces</li>
+    </ul>
+
+    <h3 class="legal-heading">4. Base légale</h3>
+    <p class="legal-text">
+      Le traitement est basé sur l'exécution du contrat (CGU acceptées)
+      et notre intérêt légitime à protéger les communautés Discord.
+    </p>
+
+    <h3 class="legal-heading">5. Durée de conservation</h3>
+    <p class="legal-text">Les logs d'audit sont conservés selon votre plan :</p>
+    <ul class="legal-list">
+      <li><strong>Free :</strong> 7 jours</li>
+      <li><strong>Pro :</strong> 30 jours</li>
+      <li><strong>Business :</strong> 90 jours</li>
+      <li><strong>Enterprise :</strong> illimité</li>
+    </ul>
+    <p class="legal-text">
+      Les données de compte sont conservées pendant la durée de l'abonnement
+      et supprimées dans les 30 jours suivant la résiliation.
+    </p>
+
+    <h3 class="legal-heading">6. Partage des données</h3>
+    <p class="legal-text">Vos données ne sont jamais vendues. Elles peuvent être partagées avec :</p>
+    <ul class="legal-list">
+      <li>Stripe (traitement des paiements) — <a href="https://stripe.com/privacy" target="_blank">stripe.com/privacy</a></li>
+      <li>Cloudflare (infrastructure réseau) — <a href="https://cloudflare.com/privacy" target="_blank">cloudflare.com/privacy</a></li>
+    </ul>
+
+    <h3 class="legal-heading">7. Vos droits (RGPD)</h3>
+    <p class="legal-text">Vous disposez des droits suivants :</p>
+    <ul class="legal-list">
+      <li>Droit d'accès à vos données</li>
+      <li>Droit de rectification</li>
+      <li>Droit à l'effacement ("droit à l'oubli")</li>
+      <li>Droit à la portabilité</li>
+      <li>Droit d'opposition</li>
+    </ul>
+    <p class="legal-text">
+      Pour exercer ces droits : <a href="mailto:yaiito@proton.me">yaiito@proton.me</a><br>
+      Réponse garantie sous 30 jours.
+    </p>
+
+    <h3 class="legal-heading">8. Cookies</h3>
+    <p class="legal-text">
+      Le dashboard utilise uniquement des cookies de session nécessaires
+      à l'authentification Discord OAuth2. Aucun cookie publicitaire ou de tracking.
+    </p>
+  </div>
+</div>
+
+<!-- CGU -->
+<div class="card mb-6" id="cgu">
+  <div class="card-header">
+    <span class="card-title">Conditions générales d'utilisation</span>
+    <span class="badge badge-info">Mise à jour : mars 2026</span>
+  </div>
+
+  <div class="legal-section">
+    <h3 class="legal-heading">1. Objet</h3>
+    <p class="legal-text">
+      Les présentes CGU régissent l'utilisation du service Bastion,
+      bot de sécurité Discord édité par yaiito.
+    </p>
+
+    <h3 class="legal-heading">2. Accès au service</h3>
+    <p class="legal-text">
+      L'accès au service nécessite un compte Discord valide.
+      L'utilisateur doit avoir les permissions d'administrateur
+      sur le serveur Discord sur lequel il souhaite utiliser Bastion.
+    </p>
+
+    <h3 class="legal-heading">3. Utilisation acceptable</h3>
+    <p class="legal-text">L'utilisateur s'engage à :</p>
+    <ul class="legal-list">
+      <li>Ne pas utiliser Bastion pour harceler, discriminer ou nuire à des utilisateurs</li>
+      <li>Ne pas tenter de contourner les mécanismes de sécurité du service</li>
+      <li>Ne pas utiliser le service à des fins illégales</li>
+      <li>Respecter les Conditions d'Utilisation de Discord</li>
+    </ul>
+
+    <h3 class="legal-heading">4. Disponibilité du service</h3>
+    <p class="legal-text">
+      Nous nous efforçons de maintenir une disponibilité maximale du service
+      mais ne garantissons pas une disponibilité à 100%.
+      Des interruptions pour maintenance peuvent survenir.
+    </p>
+
+    <h3 class="legal-heading">5. Limitation de responsabilité</h3>
+    <p class="legal-text">Bastion est un outil d'aide à la modération. yaiito ne peut être tenu responsable :</p>
+    <ul class="legal-list">
+      <li>Des faux positifs entraînant des sanctions injustifiées</li>
+      <li>Des dommages causés par une mauvaise configuration</li>
+      <li>Des interruptions de service indépendantes de notre volonté</li>
+    </ul>
+
+    <h3 class="legal-heading">6. Propriété intellectuelle</h3>
+    <p class="legal-text">
+      Le code source de Bastion est protégé par une licence propriétaire.
+      Toute reproduction, modification ou distribution sans autorisation
+      écrite est strictement interdite.
+    </p>
+
+    <h3 class="legal-heading">7. Résiliation</h3>
+    <p class="legal-text">
+      Vous pouvez cesser d'utiliser Bastion à tout moment en le retirant
+      de votre serveur Discord. Les données associées seront supprimées
+      dans les 30 jours suivant la résiliation.
+    </p>
+
+    <h3 class="legal-heading">8. Modification des CGU</h3>
+    <p class="legal-text">
+      Nous nous réservons le droit de modifier ces CGU à tout moment.
+      Les utilisateurs seront informés par email ou via #announcements
+      sur notre serveur Discord.
+    </p>
+
+    <h3 class="legal-heading">9. Droit applicable</h3>
+    <p class="legal-text">
+      Les présentes CGU sont soumises au droit français.
+      Tout litige sera soumis aux tribunaux compétents français.
+    </p>
+    <p class="legal-text">Contact : <a href="mailto:yaiito@proton.me">yaiito@proton.me</a></p>
+  </div>
+</div>
+
+<!-- CGV -->
+<div class="card mb-6" id="cgv">
+  <div class="card-header">
+    <span class="card-title">Conditions générales de vente</span>
+    <span class="badge badge-info">Mise à jour : mars 2026</span>
+  </div>
+
+  <div class="legal-section">
+    <h3 class="legal-heading">1. Vendeur</h3>
+    <p class="legal-text">yaiito — <a href="mailto:yaiito@proton.me">yaiito@proton.me</a></p>
+
+    <h3 class="legal-heading">2. Produits et tarifs</h3>
+    <p class="legal-text">Bastion est disponible selon les plans suivants :</p>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Plan</th>
+            <th>Prix</th>
+            <th>Inclus</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Free</strong></td>
+            <td>0 €/mois</td>
+            <td>1 serveur, modules de base, logs 7 jours</td>
+          </tr>
+          <tr>
+            <td><strong>Pro</strong></td>
+            <td>4,99 € HT/mois</td>
+            <td>3 serveurs, tous les modules, logs 30 jours, dashboard complet</td>
+          </tr>
+          <tr>
+            <td><strong>Business</strong></td>
+            <td>14,99 € HT/mois</td>
+            <td>10 serveurs, Behaviour Graph, File Scanner, API Access, logs 90 jours</td>
+          </tr>
+          <tr>
+            <td><strong>Enterprise</strong></td>
+            <td>49,99 € HT/mois</td>
+            <td>Serveurs illimités, self-hosting, logs illimités, support dédié</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="legal-text">
+      Les prix s'entendent hors taxes. La TVA applicable sera ajoutée
+      selon votre pays de résidence conformément à la réglementation européenne.
+    </p>
+
+    <h3 class="legal-heading">3. Paiement</h3>
+    <p class="legal-text">
+      Les paiements sont traités par Stripe (Stripe Inc.).
+      Moyens de paiement acceptés : carte bancaire (Visa, Mastercard, Amex).
+      Le paiement est prélevé mensuellement à la date d'anniversaire de l'abonnement.
+    </p>
+
+    <h3 class="legal-heading">4. Rétractation</h3>
+    <p class="legal-text">
+      Conformément à l'article L221-28 du Code de la consommation,
+      le droit de rétractation ne s'applique pas aux contenus numériques
+      fournis immédiatement après l'achat.
+    </p>
+    <p class="legal-text">
+      Cependant, nous offrons une <strong>garantie satisfait ou remboursé de 7 jours</strong>
+      sur le premier mois d'abonnement. Contactez <a href="mailto:yaiito@proton.me">yaiito@proton.me</a>.
+    </p>
+
+    <h3 class="legal-heading">5. Résiliation</h3>
+    <p class="legal-text">
+      Vous pouvez résilier votre abonnement à tout moment depuis le dashboard.
+      La résiliation prend effet à la fin de la période en cours.
+      Aucun remboursement au prorata n'est effectué sauf en cas de dysfonctionnement majeur.
+    </p>
+
+    <h3 class="legal-heading">6. Litiges</h3>
+    <p class="legal-text">
+      En cas de litige, une solution amiable sera recherchée en priorité.
+      À défaut, les tribunaux français seront compétents.
+    </p>
+    <p class="legal-text">Contact : <a href="mailto:yaiito@proton.me">yaiito@proton.me</a></p>
+  </div>
+</div>
+
+<style>
+.legal-section { padding: 4px 0 8px; }
+.legal-heading { font-size: .85rem; font-weight: 600; color: var(--text-primary); margin: 20px 0 6px; }
+.legal-heading:first-child { margin-top: 4px; }
+.legal-text { font-size: .85rem; color: var(--text-secondary); line-height: 1.6; margin: 0 0 8px; }
+.legal-list { font-size: .85rem; color: var(--text-secondary); line-height: 1.7; margin: 0 0 8px; padding-left: 20px; list-style: disc; }
+.legal-list li { margin-bottom: 2px; }
+.legal-section a { color: var(--accent); text-decoration: none; }
+.legal-section a:hover { text-decoration: underline; }
+</style>
+{{end}}

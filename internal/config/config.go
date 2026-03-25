@@ -33,6 +33,8 @@ type Config struct {
 	Dashboard                 DashboardConfig   `yaml:"dashboard"`
 	Stripe                    StripeConfig      `yaml:"stripe"`
 	AdminDiscordUserID        string            `yaml:"admin_discord_user_id"`
+	AdminPathSecret           string            `yaml:"admin_path_secret"`
+	AdminAllowedIPs           string            `yaml:"admin_allowed_ips"`
 	AltAccount                AltAccountConfig  `yaml:"altaccount"`
 	ShadowMute                ShadowMuteConfig  `yaml:"shadowmute"`
 	Onboarding                OnboardingConfig  `yaml:"onboarding"`
@@ -279,6 +281,8 @@ func applyEnv(cfg *Config) {
 	cfg.DatabaseURL = envString("DATABASE_URL", cfg.DatabaseURL)
 	cfg.DatabasePath = envString("DATABASE_PATH", cfg.DatabasePath)
 	cfg.AdminDiscordUserID = envString("ADMIN_DISCORD_USER_ID", cfg.AdminDiscordUserID)
+	cfg.AdminPathSecret = envString("ADMIN_PATH_SECRET", cfg.AdminPathSecret)
+	cfg.AdminAllowedIPs = envString("ADMIN_ALLOWED_IPS", cfg.AdminAllowedIPs)
 	cfg.Dashboard.Addr = envString("DASHBOARD_ADDR", cfg.Dashboard.Addr)
 	cfg.Dashboard.DiscordClientID = envString("DISCORD_CLIENT_ID", cfg.Dashboard.DiscordClientID)
 	cfg.Dashboard.DiscordClientSecret = envString("DISCORD_CLIENT_SECRET", cfg.Dashboard.DiscordClientSecret)

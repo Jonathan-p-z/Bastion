@@ -87,4 +87,44 @@
     </div>
   </div>
 </div>
+
+<div class="card" style="margin-top:24px">
+  <div class="card-header">
+    <span class="card-title">Serveurs avec le bot ({{len .BotGuilds}})</span>
+  </div>
+  {{if .BotGuilds}}
+  <table class="table" style="margin-top:8px">
+    <thead>
+      <tr>
+        <th>Serveur</th>
+        <th>ID</th>
+        <th>Membres</th>
+        <th>Plan</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .BotGuilds}}
+      <tr>
+        <td>
+          <div class="flex items-center gap-2">
+            {{if .Icon}}
+            <img src="{{guildIconURL .ID .Icon}}" width="28" height="28" style="border-radius:50%;object-fit:cover" alt="">
+            {{else}}
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--bg-input);display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--text-muted)">{{slice .Name 0 1}}</div>
+            {{end}}
+            <span style="font-weight:500">{{.Name}}</span>
+          </div>
+        </td>
+        <td><span class="text-secondary text-sm" style="font-family:monospace">{{.ID}}</span></td>
+        <td class="text-secondary text-sm">{{.MemberCount}}</td>
+        <td><span class="badge {{planBadge .Plan}}">{{planLabel .Plan}}</span></td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+  <p class="text-secondary text-sm" style="margin-top:8px">Aucun serveur détecté dans le cache Discord.</p>
+  {{end}}
+</div>
+
 {{end}}

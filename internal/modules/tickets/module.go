@@ -32,6 +32,8 @@ const (
 
 // EnsureCategory returns the ID of the "📩 Tickets" category for the guild,
 // creating it (invisible to @everyone) if it does not exist.
+// The bot receives an explicit ManageRoles overwrite on the category so it can
+// set permission overwrites on child channels without hitting Discord's 50013.
 func EnsureCategory(session *discordgo.Session, guildID string) (string, error) {
 	channels, err := session.GuildChannels(guildID)
 	if err != nil {
@@ -44,12 +46,20 @@ func EnsureCategory(session *discordgo.Session, guildID string) (string, error) 
 		}
 	}
 
-	// Deny @everyone from viewing the category.
+	botID := session.State.User.ID
+
 	perms := []*discordgo.PermissionOverwrite{
+		// @everyone: deny view so the category is invisible by default.
 		{
-			ID:   guildID, // @everyone role has same ID as the guild
+			ID:   guildID,
 			Type: discordgo.PermissionOverwriteTypeRole,
 			Deny: discordgo.PermissionViewChannel,
+		},
+		// Bot: explicit allow so it can manage child-channel overwrites (avoids 50013).
+		{
+			ID:    botID,
+			Type:  discordgo.PermissionOverwriteTypeMember,
+			Allow: discordgo.PermissionViewChannel | discordgo.PermissionManageRoles | discordgo.PermissionManageChannels,
 		},
 	}
 
@@ -99,30 +109,25 @@ func EnsureLogChannel(session *discordgo.Session, guildID string) (string, error
 }
 
 // CreateTicketChannel creates a ticket text channel inside the tickets category.
-// It is visible only to the ticket owner and any role that has ManageGuild.
+// Staff visibility is inherited from the category permissions; only two explicit
+// overwrites are added: @everyone deny, and the ticket owner allow.
 func CreateTicketChannel(session *discordgo.Session, guildID, categoryID, userID, username string) (*discordgo.Channel, error) {
-	// Sanitize username for channel name: lowercase, spaces → hyphens, max 90 chars.
 	name := "ticket-" + sanitizeUsername(username)
 
-	staffPerms, err := buildStaffOverwrites(session, guildID)
-	if err != nil {
-		return nil, err
-	}
-
-	perms := append([]*discordgo.PermissionOverwrite{
-		// @everyone: deny view
+	perms := []*discordgo.PermissionOverwrite{
+		// @everyone: deny view — channel is hidden by default.
 		{
 			ID:   guildID,
 			Type: discordgo.PermissionOverwriteTypeRole,
 			Deny: discordgo.PermissionViewChannel,
 		},
-		// ticket owner: allow view + send messages
+		// Ticket owner: allow view + send + history.
 		{
 			ID:    userID,
 			Type:  discordgo.PermissionOverwriteTypeMember,
 			Allow: discordgo.PermissionViewChannel | discordgo.PermissionSendMessages | discordgo.PermissionReadMessageHistory,
 		},
-	}, staffPerms...)
+	}
 
 	ch, err := session.GuildChannelCreateComplex(guildID, discordgo.GuildChannelCreateData{
 		Name:                 name,
@@ -235,31 +240,6 @@ func sanitizeUsername(username string) string {
 	return result
 }
 
-// buildStaffOverwrites returns permission overwrites (allow view+send) for every
-// role that has ManageGuild or Administrator permission on the server.
-func buildStaffOverwrites(session *discordgo.Session, guildID string) ([]*discordgo.PermissionOverwrite, error) {
-	roles, err := session.GuildRoles(guildID)
-	if err != nil {
-		return nil, fmt.Errorf("list roles: %w", err)
-	}
-
-	var overwrites []*discordgo.PermissionOverwrite
-	for _, role := range roles {
-		if role.ID == guildID {
-			// Skip @everyone — already handled with a deny overwrite.
-			continue
-		}
-		if role.Permissions&discordgo.PermissionManageServer != 0 ||
-			role.Permissions&discordgo.PermissionAdministrator != 0 {
-			overwrites = append(overwrites, &discordgo.PermissionOverwrite{
-				ID:    role.ID,
-				Type:  discordgo.PermissionOverwriteTypeRole,
-				Allow: discordgo.PermissionViewChannel | discordgo.PermissionSendMessages | discordgo.PermissionReadMessageHistory,
-			})
-		}
-	}
-	return overwrites, nil
-}
 
 func splitIntoChunks(s string, size int) []string {
 	var chunks []string

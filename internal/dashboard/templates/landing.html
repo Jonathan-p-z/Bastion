@@ -412,22 +412,13 @@
     }
     .p-features {
       flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      font-size: .82rem;
+      color: var(--text-secondary);
+      line-height: 1.75;
       padding-top: 20px;
       border-top: 1px solid var(--border);
       margin-bottom: 28px;
     }
-    .p-feature {
-      display: flex;
-      align-items: flex-start;
-      gap: 9px;
-      font-size: .8rem;
-      color: var(--text-secondary);
-      line-height: 1.4;
-    }
-    .p-feature svg { flex-shrink: 0; color: var(--crimson); margin-top: 2px; }
 
     /* ── CTA FINAL ─────────────────────────────────── */
     .cta-section {
@@ -515,6 +506,7 @@
       .stats { grid-template-columns: repeat(2, 1fr); }
       .features-grid { grid-template-columns: 1fr 1fr; }
       .feature-card.span-2 { grid-column: span 2; }
+      .feature-card.span-2-lg { grid-column: span 1; }
       .pricing-grid { grid-template-columns: repeat(2, 1fr); }
       .section { padding: 80px 24px; }
       .pricing-wrap { padding: 0 24px 80px; }
@@ -569,7 +561,7 @@
     Ton serveur dort.<br>
     <em>Les raiders, non.</em>
   </h1>
-  <p class="hero-sub">Pendant que tu dors, Bastion veille. Détection, blocage, notification — tout se passe sans toi.</p>
+  <p class="hero-sub">Pendant que tu dors, Bastion veille. Détection, blocage et notification, tout se passe sans toi.</p>
   <div class="hero-ctas">
     <a href="{{inviteURL}}" target="_blank" class="btn btn-discord btn-lg">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -625,7 +617,7 @@
         </svg>
       </div>
       <h3>Anti-Raid</h3>
-      <p>Ton serveur se fait envahir. Bastion détecte l'afflux, active le lockdown automatiquement, et te notifie. Tu vois le résultat — pas le chaos.</p>
+      <p>Ton serveur se fait envahir. Bastion détecte l'afflux, active le lockdown automatiquement et te notifie. Tu vois le résultat, pas le chaos.</p>
     </div>
 
     <!-- Anti-Nuke -->
@@ -661,7 +653,7 @@
         </svg>
       </div>
       <h3>Anti-Phishing</h3>
-      <p>Nitro scam, liens malveillants, domaines suspects — bloqués avant que quelqu'un clique.</p>
+      <p>Nitro scam, liens malveillants et domaines suspects, bloqués avant que quelqu'un clique.</p>
     </div>
 
     <!-- Risk Scoring -->
@@ -676,7 +668,7 @@
     </div>
 
     <!-- Audit Logs -->
-    <div class="feature-card reveal">
+    <div class="feature-card span-2 span-2-lg reveal">
       <div class="feat-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -716,12 +708,7 @@
       <div class="p-name">Free</div>
       <div class="p-price">0<span>€</span></div>
       <div class="p-period">Pour toujours</div>
-      <ul class="p-features">
-        <li class="p-feature"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>1 serveur</li>
-        <li class="p-feature"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Modules de base</li>
-        <li class="p-feature"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Logs 7 jours</li>
-        <li class="p-feature"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>5 règles custom</li>
-      </ul>
+      <p class="p-features">1 serveur, modules de base, logs conservés 7 jours et 5 règles personnalisées.</p>
       <a href="{{inviteURL}}" target="_blank" class="btn btn-ghost btn-full">Commencer gratuit</a>
     </div>
 
@@ -731,12 +718,7 @@
       <div class="p-name accent">Pro</div>
       <div class="p-price">4.99<span>€/mois</span></div>
       <div class="p-period">Pour les communautés actives</div>
-      <ul class="p-features">
-        <li class="p-feature"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>3 serveurs</li>
-        <li class="p-feature"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Tous les modules</li>
-        <li class="p-feature"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Logs 30 jours</li>
-        <li class="p-feature"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Dashboard complet</li>
-      </ul>
+      <p class="p-features">3 serveurs, tous les modules actifs, logs 30 jours et dashboard complet.</p>
       <a href="/login" class="btn btn-primary btn-full">Choisir Pro</a>
     </div>
 
@@ -745,12 +727,7 @@
       <div class="p-name">Business</div>
       <div class="p-price">14.99<span>€/mois</span></div>
       <div class="p-period">Pour les grandes communautés</div>
-      <ul class="p-features">
-        <li class="p-feature"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>10 serveurs</li>
-        <li class="p-feature"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Behaviour Graph</li>
-        <li class="p-feature"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>File Scanner</li>
-        <li class="p-feature"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>API Access + Logs 90j</li>
-      </ul>
+      <p class="p-features">10 serveurs, tout le plan Pro inclus, Behaviour Graph, File Scanner, API Access et logs 90 jours.</p>
       <a href="/login" class="btn btn-ghost btn-full">Choisir Business</a>
     </div>
 
@@ -759,12 +736,7 @@
       <div class="p-name">Enterprise</div>
       <div class="p-price">49.99<span>€/mois</span></div>
       <div class="p-period">Pour les organisations</div>
-      <ul class="p-features">
-        <li class="p-feature"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Serveurs illimités</li>
-        <li class="p-feature"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Self-host &amp; White-label</li>
-        <li class="p-feature"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Logs illimités</li>
-        <li class="p-feature"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Support dédié</li>
-      </ul>
+      <p class="p-features">Serveurs illimités, self-host et white-label, logs illimités et support dédié.</p>
       <a href="mailto:contact@bastion.gg" class="btn btn-ghost btn-full">Contacter</a>
     </div>
 
@@ -806,7 +778,7 @@
     <a href="/login">Dashboard</a>
     <a href="/legal">Legal</a>
   </div>
-  <span class="footer-copy">© 2026 yaiito · MIT License</span>
+  <span class="footer-copy">© 2026 yaiito · AGPL-3.0</span>
 </footer>
 
 <!-- GSAP + ScrollTrigger -->

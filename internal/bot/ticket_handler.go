@@ -51,8 +51,8 @@ func (b *Bot) handleTicketCommand(ctx context.Context, session *discordgo.Sessio
 
 	sub, err := b.store.GetSubscription(ctx, interaction.GuildID)
 	plan := "free"
-	if err == nil && sub != nil && sub.Plan != "" {
-		plan = sub.Plan
+	if err == nil && sub != nil && sub.Tier != "" {
+		plan = sub.Tier
 	}
 
 	count, err := b.store.CountOpenTickets(ctx, interaction.GuildID)

@@ -505,8 +505,8 @@
     .footer-links a:hover { color: var(--text); }
     .footer-copy { font-size: .72rem; color: var(--text-muted); }
 
-    /* scroll-reveal initial state */
-    .reveal { opacity: 0; transform: translateY(22px); }
+    /* reveal: visible by default — GSAP overrides from() on load */
+    .reveal { opacity: 1; }
 
     /* ── RESPONSIVE ─────────────────────────────────── */
     @media (max-width: 960px) {
@@ -836,12 +836,12 @@
 
   // Scroll-reveal for feature cards and pricing cards
   gsap.utils.toArray('.reveal').forEach(el => {
-    gsap.to(el, {
-      opacity: 1,
-      y: 0,
+    gsap.from(el, {
+      opacity: 0,
+      y: 28,
       duration: 0.6,
       ease: 'power2.out',
-      scrollTrigger: { trigger: el, start: 'top 90%' }
+      scrollTrigger: { trigger: el, start: 'top 92%' }
     });
   });
 </script>

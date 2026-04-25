@@ -75,7 +75,7 @@ func (s *Server) securityHeaders(w http.ResponseWriter) {
 	h.Set("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
 	h.Set("Content-Security-Policy",
 		"default-src 'self'; "+
-			"script-src 'self' https://cdnjs.cloudflare.com; "+
+			"script-src 'self' https://cdnjs.cloudflare.com 'sha256-XusCoAI/06CL+91xmnNxw3nQPhfWTZ7hPxLF9CNwUhM='; "+
 			"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "+
 			"img-src 'self' https://cdn.discordapp.com data:; "+
 			"font-src 'self' https://fonts.gstatic.com; "+

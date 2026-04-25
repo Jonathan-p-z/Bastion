@@ -618,88 +618,234 @@ select.form-input { cursor: pointer; }
 .progress-fill.gold    { background: var(--gold); }
 
 /* ══════════════════════════════════════════════════════
-   GUILD CARDS
+   GUILD CARDS v2 (Mes serveurs)
    ══════════════════════════════════════════════════════ */
-.guild-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 14px;
-}
 
-.guild-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 18px;
+/* ── Hero + search ───────────────────────────────────── */
+.guilds-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+.guilds-hero--empty { margin-bottom: 24px; }
+.guilds-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -.04em;
+  color: var(--text);
+  margin-bottom: 6px;
+  line-height: 1.15;
+}
+.guilds-desc {
+  font-size: .875rem;
+  color: rgba(255,255,255,.45);
+  margin: 0;
+}
+.guilds-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 7px;
+  flex-shrink: 0;
+}
+.guilds-search-wrap {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 13px;
-  transition: all var(--transition);
-  text-decoration: none;
-  color: inherit;
-  position: relative;
-  overflow: hidden;
 }
-.guild-card:hover {
-  border-color: var(--border-accent);
-  background: var(--bg-card-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
-  color: inherit;
-  text-decoration: none;
-}
-.guild-card::after {
-  content: '→';
+.guilds-search-wrap svg {
   position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--accent);
-  opacity: 0;
-  transition: opacity var(--transition), right var(--transition);
-  font-size: 1rem;
+  left: 10px;
+  color: var(--text-muted);
+  pointer-events: none;
+  flex-shrink: 0;
 }
-.guild-card:hover::after { opacity: 1; right: 14px; }
-
-.guild-icon {
-  width: 44px;
-  height: 44px;
+.guilds-search {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
   border-radius: var(--radius-sm);
-  background: var(--accent-dim);
-  border: 1px solid var(--border-accent);
-  object-fit: cover;
+  padding: 8px 12px 8px 34px;
+  color: var(--text);
+  font-size: .84rem;
+  font-family: var(--font-sans);
+  width: 240px;
+  outline: none;
+  transition: border-color var(--transition), background var(--transition);
+}
+.guilds-search:focus {
+  border-color: rgba(255,255,255,.18);
+  background: rgba(255,255,255,.06);
+}
+.guilds-search::placeholder { color: var(--text-muted); }
+.guilds-count {
+  font-size: .72rem;
+  color: rgba(255,255,255,.3);
+  text-align: right;
+}
+
+/* ── Cards grid ──────────────────────────────────────── */
+.gcards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.gcard {
+  background: var(--bg-card);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+  position: relative;
+}
+.gcard:hover {
+  border-color: rgba(255,255,255,.1);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.5);
+  color: inherit;
+  text-decoration: none;
+}
+.gcard-active { border-color: rgba(196,30,58,.2); }
+.gcard-active:hover { border-color: rgba(196,30,58,.4); }
+
+.gcard-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.gcard-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--accent-light);
-  font-size: 1.1rem;
+  color: var(--text-secondary);
+  font-size: 1.3rem;
   font-weight: 700;
   overflow: hidden;
 }
-.guild-icon img {
-  width: 100%; height: 100%;
-  border-radius: calc(var(--radius-sm) - 1px);
-  display: block;
-}
+.gcard-icon img { width: 100%; height: 100%; display: block; border-radius: 13px; }
 
-.guild-info { flex: 1; min-width: 0; }
-.guild-name {
-  font-weight: 600;
-  color: var(--text);
-  font-size: .9rem;
+.gcard-meta { flex: 1; min-width: 0; }
+.gcard-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -.02em;
+  margin-bottom: 5px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 4px;
 }
-.guild-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.gcard-status-active {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .67rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  color: #4ade80;
+}
+.gcard-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  flex-shrink: 0;
+  animation: gcard-pulse 2s ease infinite;
+}
+@keyframes gcard-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(74,222,128,.5); }
+  70%  { box-shadow: 0 0 0 5px rgba(74,222,128,0); }
+  100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); }
+}
+.gcard-status-inactive {
+  font-size: .78rem;
+  color: rgba(255,255,255,.28);
+}
 
-.guild-card.no-bot {
-  opacity: .45;
-  border-style: dashed;
+.gcard-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  gap: 8px;
 }
-.guild-card.no-bot:hover { opacity: 1; }
+.gcard-cta {
+  font-size: .78rem;
+  font-weight: 600;
+  color: rgba(255,255,255,.45);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  transition: color var(--transition), border-color var(--transition);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.gcard:hover .gcard-cta {
+  color: #fff;
+  border-color: rgba(255,255,255,.3);
+}
+.gcard-add-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  background: var(--accent);
+  color: #fff;
+  font-size: .78rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  border: 1px solid var(--accent);
+  transition: background var(--transition), border-color var(--transition), box-shadow var(--transition);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.gcard-add-btn:hover {
+  background: #a51830;
+  border-color: #a51830;
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 0 16px rgba(196,30,58,.4);
+}
+
+/* ── Search empty state ──────────────────────────────── */
+.guilds-empty-search {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--text-muted);
+}
+.guilds-empty-search svg { margin: 0 auto 12px; opacity: .2; }
+.guilds-empty-search p { font-size: .84rem; }
+
+/* ── Footer hint ─────────────────────────────────────── */
+.guilds-footer {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+.guilds-footer p {
+  font-size: .82rem;
+  color: rgba(255,255,255,.3);
+  margin: 0;
+}
+.guilds-footer a {
+  color: rgba(255,255,255,.5);
+  transition: color var(--transition);
+}
+.guilds-footer a:hover { color: var(--text); }
 
 /* ══════════════════════════════════════════════════════
    BILLING / PRICING
@@ -1302,6 +1448,10 @@ select.form-input { cursor: pointer; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,.18); }
 
 /* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 900px) {
+  .gcards-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
 @media (max-width: 768px) {
   :root { --sidebar-w: 0px; }
   .sidebar {
@@ -1321,6 +1471,10 @@ select.form-input { cursor: pointer; }
   .cta-section { padding: 44px 20px; }
   .landing-footer { flex-direction: column; gap: 14px; text-align: center; }
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .gcards-grid { grid-template-columns: 1fr; }
+  .guilds-hero { flex-direction: column; }
+  .guilds-controls { align-items: flex-start; width: 100%; }
+  .guilds-search { width: 100%; }
   .page-content { padding: 18px 16px 40px; }
   .features-row-2,
   .features-row-3 { grid-template-columns: 1fr; }

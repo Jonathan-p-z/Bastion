@@ -3,12 +3,13 @@
 <span class="current">Mes serveurs</span>
 {{end}}
 
-<div class="page-header">
-  <div class="page-title">Mes serveurs</div>
-  <div class="page-subtitle">Serveurs Discord où vous avez les permissions admin.</div>
+{{if not .Guilds}}
+
+<div class="guilds-hero guilds-hero--empty">
+  <h1 class="guilds-title">Vos serveurs</h1>
+  <p class="guilds-desc">Sélectionnez un serveur pour accéder à sa configuration.</p>
 </div>
 
-{{if not .Guilds}}
 <div class="empty-state">
   <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -19,54 +20,80 @@
   <h3>Aucun serveur trouvé</h3>
   <p>Vous n'avez pas les permissions admin sur des serveurs, ou aucun serveur n'a encore été chargé.</p>
   <div style="margin-top:20px">
-    <a href="{{inviteURL}}" target="_blank" class="btn btn-primary">Ajouter Bastion à un serveur</a>
+    <a href="{{inviteURL}}" target="_blank" class="btn btn-crimson">Ajouter Bastion à un serveur</a>
   </div>
 </div>
+
 {{else}}
-<div class="guild-grid">
-  {{range .Guilds}}
-  {{if .HasBastion}}
-  <a class="guild-card" href="/app/guild?id={{.ID}}">
-    <div class="guild-icon">
-      {{if .Icon}}
-      <img src="{{guildIconURL .ID .Icon}}" alt="{{.Name}}">
-      {{else}}
-      {{printf "%.1s" .Name}}
-      {{end}}
+
+<div class="guilds-hero">
+  <div>
+    <h1 class="guilds-title">Vos serveurs</h1>
+    <p class="guilds-desc">Sélectionnez un serveur pour accéder à sa configuration.</p>
+  </div>
+  <div class="guilds-controls">
+    <div class="guilds-search-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="search" id="guild-search" class="guilds-search" placeholder="Rechercher un serveur…" autocomplete="off">
     </div>
-    <div class="guild-info">
-      <div class="guild-name">{{.Name}}</div>
-      <div class="guild-meta">
-        <span class="badge {{planBadge .Plan}}">{{planLabel .Plan}}</span>
-        <span class="badge badge-success">
-          <span class="badge-dot"></span>Actif
-        </span>
+    <div class="guilds-count" id="guilds-count"></div>
+  </div>
+</div>
+
+<div class="gcards-grid" id="guilds-grid">
+  {{range .Guilds}}
+
+  {{if .HasBastion}}
+  <a class="gcard gcard-active" href="/app/guild?id={{.ID}}" data-name="{{.Name}}">
+    <div class="gcard-head">
+      <div class="gcard-icon">
+        {{if .Icon}}<img src="{{guildIconURL .ID .Icon}}" alt="{{.Name}}">{{else}}{{printf "%.1s" .Name}}{{end}}
       </div>
+      <div class="gcard-meta">
+        <div class="gcard-name">{{.Name}}</div>
+        <div class="gcard-status-active">
+          <span class="gcard-pulse"></span>ACTIF
+        </div>
+      </div>
+    </div>
+    <div class="gcard-foot">
+      <span class="badge {{planBadge .Plan}}">{{planLabel .Plan}}</span>
+      <span class="gcard-cta">Configurer →</span>
     </div>
   </a>
+
   {{else}}
-  <div class="guild-card no-bot">
-    <div class="guild-icon">
-      {{if .Icon}}
-      <img src="{{guildIconURL .ID .Icon}}" alt="{{.Name}}">
-      {{else}}
-      {{printf "%.1s" .Name}}
-      {{end}}
-    </div>
-    <div class="guild-info">
-      <div class="guild-name">{{.Name}}</div>
-      <div class="guild-meta">
-        <span class="badge badge-muted">Bastion absent</span>
+  <div class="gcard gcard-inactive" data-name="{{.Name}}">
+    <div class="gcard-head">
+      <div class="gcard-icon">
+        {{if .Icon}}<img src="{{guildIconURL .ID .Icon}}" alt="{{.Name}}">{{else}}{{printf "%.1s" .Name}}{{end}}
+      </div>
+      <div class="gcard-meta">
+        <div class="gcard-name">{{.Name}}</div>
+        <div class="gcard-status-inactive">Bastion non installé</div>
       </div>
     </div>
-    <a href="{{inviteURL}}" target="_blank" style="position:absolute;right:14px;top:50%;transform:translateY(-50%)" class="btn btn-primary btn-sm">Ajouter</a>
+    <div class="gcard-foot">
+      <span></span>
+      <a href="{{inviteURL}}" target="_blank" class="gcard-add-btn">Ajouter</a>
+    </div>
   </div>
   {{end}}
+
   {{end}}
 </div>
 
-<div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border)">
-  <p class="text-muted text-sm">
+<div class="guilds-empty-search" id="guilds-empty" style="display:none">
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+  </svg>
+  <p>Aucun serveur ne correspond à cette recherche.</p>
+</div>
+
+<div class="guilds-footer">
+  <p>
     Vous ne voyez pas votre serveur ?
     <a href="{{inviteURL}}" target="_blank">Ajoutez Bastion</a>
     ou
@@ -74,5 +101,32 @@
     pour mettre à jour la liste.
   </p>
 </div>
+
+<script>
+(function () {
+  var cards  = Array.from(document.querySelectorAll('#guilds-grid [data-name]'));
+  var total  = cards.length;
+  var active = document.querySelectorAll('.gcard-active').length;
+  var countEl = document.getElementById('guilds-count');
+  var emptyEl = document.getElementById('guilds-empty');
+  var search  = document.getElementById('guild-search');
+
+  if (countEl) countEl.textContent = active + ' avec Bastion · ' + total + ' au total';
+
+  if (search) {
+    search.addEventListener('input', function () {
+      var q = this.value.toLowerCase().trim();
+      var visible = 0;
+      cards.forEach(function (c) {
+        var match = !q || c.dataset.name.toLowerCase().indexOf(q) !== -1;
+        c.style.display = match ? '' : 'none';
+        if (match) visible++;
+      });
+      if (emptyEl) emptyEl.style.display = visible === 0 ? '' : 'none';
+    });
+  }
+})();
+</script>
+
 {{end}}
 {{end}}

@@ -371,14 +371,17 @@ func (s *Server) handleGuildModules(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	isPro := guild.Plan == "pro" || guild.Plan == "business" || guild.Plan == "enterprise"
+	isBusiness := guild.Plan == "business" || guild.Plan == "enterprise"
+
 	modules := []moduleStatus{
 		{Name: "Anti-Spam", Description: "Détecte les rafales de messages et limite le spam.", Enabled: true, Icon: "shield"},
 		{Name: "Anti-Raid", Description: "Détecte les afflux de nouveaux membres et déclenche le lockdown.", Enabled: true, Icon: "users"},
 		{Name: "Anti-Phishing", Description: "Bloque les liens suspects, de phishing et de nitro scam.", Enabled: true, Icon: "link"},
 		{Name: "Anti-Nuke", Description: "Empêche la destruction massive de canaux, rôles et bans.", Enabled: true, Icon: "bomb"},
-		{Name: "Behaviour Graph", Description: "Analyse comportementale avancée des membres.", Enabled: false, Icon: "activity"},
-		{Name: "File Scanner", Description: "Analyse les pièces jointes à la recherche de malwares.", Enabled: false, Icon: "file"},
-		{Name: "Verification", Description: "Système de vérification pour les nouveaux membres.", Enabled: false, Icon: "check"},
+		{Name: "Behaviour Graph", Description: "Analyse comportementale avancée des membres.", Enabled: isBusiness, Icon: "activity"},
+		{Name: "File Scanner", Description: "Analyse les pièces jointes à la recherche de malwares.", Enabled: isBusiness, Icon: "file"},
+		{Name: "Verification", Description: "Système de vérification pour les nouveaux membres.", Enabled: isPro, Icon: "check"},
 	}
 
 	s.renderPage(w, "modules", modulesViewData{

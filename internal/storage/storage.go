@@ -6,6 +6,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"log"
 	"path"
 	"sort"
 	"strings"
@@ -710,6 +711,7 @@ func (s *Store) GetTiersByGuildIDs(ctx context.Context, guildIDs []string) (map[
 	if len(guildIDs) == 0 {
 		return map[string]string{}, nil
 	}
+	log.Printf("[DEBUG] GetTiersByGuildIDs: querying %d guild(s): %v", len(guildIDs), guildIDs)
 	placeholders := make([]string, len(guildIDs))
 	args := make([]any, len(guildIDs))
 	for i, id := range guildIDs {
@@ -722,6 +724,7 @@ func (s *Store) GetTiersByGuildIDs(ctx context.Context, guildIDs []string) (map[
 	)
 	rows, err := s.db.QueryContext(ctx, query, args...)
 	if err != nil {
+		log.Printf("[DEBUG] GetTiersByGuildIDs: query error: %v", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -733,6 +736,7 @@ func (s *Store) GetTiersByGuildIDs(ctx context.Context, guildIDs []string) (map[
 		}
 		result[guildID] = tier
 	}
+	log.Printf("[DEBUG] GetTiersByGuildIDs: result: %v", result)
 	return result, rows.Err()
 }
 

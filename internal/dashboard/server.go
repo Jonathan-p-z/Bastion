@@ -96,8 +96,12 @@ func (s *Server) routes() {
 	s.mux.Handle("/static/", http.StripPrefix("/static/", http.FileServerFS(staticFS)))
 
 	site := http.FileServer(http.Dir("web/site"))
-	s.mux.Handle("/_next/", site)
-	s.mux.Handle("/", site)
+	siteHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Security-Policy", "script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';")
+		site.ServeHTTP(w, r)
+	})
+	s.mux.Handle("/_next/", siteHandler)
+	s.mux.Handle("/", siteHandler)
 	s.mux.HandleFunc("/legal", s.handleLegal)
 	s.mux.HandleFunc("/login", s.handleLoginPage)
 

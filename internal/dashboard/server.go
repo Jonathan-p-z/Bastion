@@ -95,16 +95,9 @@ func (s *Server) routes() {
 	}
 	s.mux.Handle("/static/", http.StripPrefix("/static/", http.FileServerFS(staticFS)))
 
-	siteFS, err := fs.Sub(web.SiteFS, "site")
-	if err != nil {
-		panic(err)
-	}
-	nextFS, err := fs.Sub(web.SiteFS, "site/_next")
-	if err != nil {
-		panic(err)
-	}
-	s.mux.Handle("/_next/", http.StripPrefix("/_next/", http.FileServerFS(nextFS)))
-	s.mux.Handle("/", http.FileServerFS(siteFS))
+	site := http.FileServer(http.Dir("web/site"))
+	s.mux.Handle("/_next/", site)
+	s.mux.Handle("/", site)
 	s.mux.HandleFunc("/legal", s.handleLegal)
 	s.mux.HandleFunc("/login", s.handleLoginPage)
 

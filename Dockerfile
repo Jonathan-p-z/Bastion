@@ -13,6 +13,7 @@ RUN addgroup -S sentinel && adduser -S sentinel -G sentinel
 WORKDIR /app
 COPY --from=build /out/sentinel /app/sentinel
 COPY config.yaml.example /app/config.yaml
+COPY web/site/ /app/web/site/
 VOLUME ["/data"]
 ENV DATABASE_PATH=/data/sentinel.db
 USER sentinel

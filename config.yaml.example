@@ -86,3 +86,10 @@ escalation:
     - score: 100
       action: ban
   cooldown_minutes: 60
+
+stripe:
+  secret_key: ""
+  webhook_secret: ""
+  price_id_pro: ""
+  price_id_business: ""
+  price_id_enterprise: "price_1TPqPzJhsp1jIcX1LA0cJAsZ"

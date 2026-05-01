@@ -643,9 +643,9 @@ func (s *Store) CleanupSessions(ctx context.Context) error {
 // ── Subscriptions ─────────────────────────────────────────────────────────────
 
 func (s *Store) UpsertSubscription(ctx context.Context, sub Subscription) error {
-	var periodEnd sql.NullTime
+	var periodEnd sql.NullInt64
 	if !sub.CurrentPeriodEnd.IsZero() {
-		periodEnd = sql.NullTime{Time: sub.CurrentPeriodEnd, Valid: true}
+		periodEnd = sql.NullInt64{Int64: sub.CurrentPeriodEnd.Unix(), Valid: true}
 	}
 	_, err := s.db.ExecContext(ctx, `
 		INSERT INTO subscriptions (guild_id, stripe_customer_id, stripe_subscription_id, price_id, tier, status, current_period_end)
@@ -657,9 +657,9 @@ func (s *Store) UpsertSubscription(ctx context.Context, sub Subscription) error 
 			tier                   = EXCLUDED.tier,
 			status                 = EXCLUDED.status,
 			current_period_end     = EXCLUDED.current_period_end,
-			updated_at             = NOW()`,
+			updated_at             = $8`,
 		sub.GuildID, sub.StripeCustomerID, sub.StripeSubscriptionID,
-		sub.PriceID, sub.Tier, sub.Status, periodEnd)
+		sub.PriceID, sub.Tier, sub.Status, periodEnd, time.Now().Unix())
 	return err
 }
 
@@ -670,10 +670,11 @@ func (s *Store) GetSubscription(ctx context.Context, guildID string) (*Subscript
 	var sub Subscription
 	var customerID, subID, priceID sql.NullString
 	var periodEnd sql.NullInt64
+	var createdAt, updatedAt int64
 	err := row.Scan(
 		&sub.ID, &sub.GuildID, &customerID, &subID,
 		&priceID, &sub.Tier, &sub.Status, &periodEnd,
-		&sub.CreatedAt, &sub.UpdatedAt)
+		&createdAt, &updatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -686,6 +687,8 @@ func (s *Store) GetSubscription(ctx context.Context, guildID string) (*Subscript
 	if periodEnd.Valid {
 		sub.CurrentPeriodEnd = time.Unix(periodEnd.Int64, 0)
 	}
+	sub.CreatedAt = time.Unix(createdAt, 0)
+	sub.UpdatedAt = time.Unix(updatedAt, 0)
 	return &sub, nil
 }
 
@@ -696,10 +699,11 @@ func (s *Store) GetSubscriptionByStripeSubID(ctx context.Context, stripeSubID st
 	var sub Subscription
 	var customerID, subID, priceID sql.NullString
 	var periodEnd sql.NullInt64
+	var createdAt, updatedAt int64
 	err := row.Scan(
 		&sub.ID, &sub.GuildID, &customerID, &subID,
 		&priceID, &sub.Tier, &sub.Status, &periodEnd,
-		&sub.CreatedAt, &sub.UpdatedAt)
+		&createdAt, &updatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
@@ -712,6 +716,8 @@ func (s *Store) GetSubscriptionByStripeSubID(ctx context.Context, stripeSubID st
 	if periodEnd.Valid {
 		sub.CurrentPeriodEnd = time.Unix(periodEnd.Int64, 0)
 	}
+	sub.CreatedAt = time.Unix(createdAt, 0)
+	sub.UpdatedAt = time.Unix(updatedAt, 0)
 	return &sub, nil
 }
 

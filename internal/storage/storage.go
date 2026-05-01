@@ -669,7 +669,7 @@ func (s *Store) GetSubscription(ctx context.Context, guildID string) (*Subscript
 		FROM subscriptions WHERE guild_id = $1`, guildID)
 	var sub Subscription
 	var customerID, subID, priceID sql.NullString
-	var periodEnd sql.NullTime
+	var periodEnd sql.NullInt64
 	err := row.Scan(
 		&sub.ID, &sub.GuildID, &customerID, &subID,
 		&priceID, &sub.Tier, &sub.Status, &periodEnd,
@@ -684,7 +684,7 @@ func (s *Store) GetSubscription(ctx context.Context, guildID string) (*Subscript
 	sub.StripeSubscriptionID = subID.String
 	sub.PriceID = priceID.String
 	if periodEnd.Valid {
-		sub.CurrentPeriodEnd = periodEnd.Time
+		sub.CurrentPeriodEnd = time.Unix(periodEnd.Int64, 0)
 	}
 	return &sub, nil
 }
@@ -695,7 +695,7 @@ func (s *Store) GetSubscriptionByStripeSubID(ctx context.Context, stripeSubID st
 		FROM subscriptions WHERE stripe_subscription_id = $1`, stripeSubID)
 	var sub Subscription
 	var customerID, subID, priceID sql.NullString
-	var periodEnd sql.NullTime
+	var periodEnd sql.NullInt64
 	err := row.Scan(
 		&sub.ID, &sub.GuildID, &customerID, &subID,
 		&priceID, &sub.Tier, &sub.Status, &periodEnd,
@@ -710,7 +710,7 @@ func (s *Store) GetSubscriptionByStripeSubID(ctx context.Context, stripeSubID st
 	sub.StripeSubscriptionID = subID.String
 	sub.PriceID = priceID.String
 	if periodEnd.Valid {
-		sub.CurrentPeriodEnd = periodEnd.Time
+		sub.CurrentPeriodEnd = time.Unix(periodEnd.Int64, 0)
 	}
 	return &sub, nil
 }

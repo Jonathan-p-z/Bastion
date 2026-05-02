@@ -1,47 +1,47 @@
 {{define "content"}}
 {{block "breadcrumb" .}}
-<span class="current">Administration</span>
+<span class="current">{{T "nav.admin"}}</span>
 {{end}}
 
 <div class="admin-banner">
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
   </svg>
-  Accès réservé à {{.User.Username}}
+  {{printf (T "admin.banner") .User.Username}}
 </div>
 
 <div class="page-header">
-  <div class="page-title">Super Administration</div>
-  <div class="page-subtitle">Vue globale de tous les serveurs et clients.</div>
+  <div class="page-title">{{T "admin.title"}}</div>
+  <div class="page-subtitle">{{T "admin.subtitle"}}</div>
 </div>
 
 <div class="stats-grid">
   <div class="stat-card accent">
-    <div class="stat-label">Serveurs enregistrés</div>
+    <div class="stat-label">{{T "admin.stat_guilds"}}</div>
     <div class="stat-value">{{.TotalGuilds}}</div>
-    <div class="stat-meta">Avec au moins un événement</div>
+    <div class="stat-meta">{{T "admin.stat_guilds_meta"}}</div>
   </div>
   <div class="stat-card">
-    <div class="stat-label">Plan Free</div>
+    <div class="stat-label">{{T "admin.stat_free"}}</div>
     <div class="stat-value">{{index .PlanCounts "free"}}</div>
-    <div class="stat-meta">Abonnements actifs</div>
+    <div class="stat-meta">{{T "admin.stat_active"}}</div>
   </div>
   <div class="stat-card accent">
-    <div class="stat-label">Plan Pro</div>
+    <div class="stat-label">{{T "admin.stat_pro"}}</div>
     <div class="stat-value">{{index .PlanCounts "pro"}}</div>
-    <div class="stat-meta">Abonnements actifs</div>
+    <div class="stat-meta">{{T "admin.stat_active"}}</div>
   </div>
   <div class="stat-card success">
-    <div class="stat-label">Plan Business+</div>
+    <div class="stat-label">{{T "admin.stat_business"}}</div>
     <div class="stat-value">{{add (index .PlanCounts "business") (index .PlanCounts "enterprise")}}</div>
-    <div class="stat-meta">Business + Enterprise</div>
+    <div class="stat-meta">{{T "admin.stat_business_meta"}}</div>
   </div>
 </div>
 
 <div class="grid-2">
   <div class="card">
     <div class="card-header">
-      <span class="card-title">Répartition par plan</span>
+      <span class="card-title">{{T "admin.plan_distribution"}}</span>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
       {{range $plan, $count := .PlanCounts}}
@@ -62,7 +62,7 @@
 
   <div class="card">
     <div class="card-header">
-      <span class="card-title">Revenus mensuels estimés</span>
+      <span class="card-title">{{T "admin.mrr"}}</span>
       <span class="badge badge-muted">placeholder</span>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px">
@@ -79,7 +79,7 @@
         <span style="font-weight:600;color:var(--text)">{{mul (index .PlanCounts "enterprise") 4999}}€</span>
       </div>
       <div style="border-top:1px solid var(--border);padding-top:10px" class="flex items-center justify-between">
-        <span style="font-weight:600;color:var(--text)">MRR total</span>
+        <span style="font-weight:600;color:var(--text)">{{T "admin.mrr_total"}}</span>
         <span style="font-size:1.3rem;font-weight:700;color:var(--success)">
           {{add (add (mul (index .PlanCounts "pro") 499) (mul (index .PlanCounts "business") 1499)) (mul (index .PlanCounts "enterprise") 4999)}}€
         </span>
@@ -90,16 +90,16 @@
 
 <div class="card" style="margin-top:24px">
   <div class="card-header">
-    <span class="card-title">Serveurs avec le bot ({{len .BotGuilds}})</span>
+    <span class="card-title">{{T "admin.bot_guilds"}} ({{len .BotGuilds}})</span>
   </div>
   {{if .BotGuilds}}
   <table class="table" style="margin-top:8px">
     <thead>
       <tr>
-        <th>Serveur</th>
-        <th>ID</th>
-        <th>Membres</th>
-        <th>Plan</th>
+        <th>{{T "admin.col_server"}}</th>
+        <th>{{T "admin.col_id"}}</th>
+        <th>{{T "admin.col_members"}}</th>
+        <th>{{T "admin.col_plan"}}</th>
       </tr>
     </thead>
     <tbody>
@@ -123,7 +123,7 @@
     </tbody>
   </table>
   {{else}}
-  <p class="text-secondary text-sm" style="margin-top:8px">Aucun serveur détecté dans le cache Discord.</p>
+  <p class="text-secondary text-sm" style="margin-top:8px">{{T "admin.no_guilds"}}</p>
   {{end}}
 </div>
 

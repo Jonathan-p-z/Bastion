@@ -1,21 +1,21 @@
 {{define "content"}}
 {{block "breadcrumb" .}}
-<a href="/app">Serveurs</a>
+<a href="/app">{{T "nav.servers"}}</a>
 <span class="sep">/</span>
 <a href="/app/guild?id={{.Guild.ID}}">{{.Guild.Name}}</a>
 <span class="sep">/</span>
-<span class="current">Audit Logs</span>
+<span class="current">{{T "nav.audit_logs"}}</span>
 {{end}}
 
 <div class="page-header flex items-center justify-between">
   <div>
-    <div class="page-title">Audit Logs</div>
-    <div class="page-subtitle">{{.Since}} · {{len .Logs}} événements</div>
+    <div class="page-title">{{T "nav.audit_logs"}}</div>
+    <div class="page-subtitle">{{T (printf "audit.period.%s" .Since)}} · {{len .Logs}} {{T "audit.events"}}</div>
   </div>
   <div class="flex gap-2">
-    <a href="?id={{.Guild.ID}}&since=1d" class="btn btn-sm {{if eq .Since "Dernières 24h"}}btn-primary{{else}}btn-secondary{{end}}">24h</a>
-    <a href="?id={{.Guild.ID}}&since=7d" class="btn btn-sm {{if eq .Since "7 derniers jours"}}btn-primary{{else}}btn-secondary{{end}}">7j</a>
-    <a href="?id={{.Guild.ID}}&since=30d" class="btn btn-sm {{if eq .Since "30 derniers jours"}}btn-primary{{else}}btn-secondary{{end}}">30j</a>
+    <a href="?id={{.Guild.ID}}&since=1d" class="btn btn-sm {{if eq .Since "1d"}}btn-primary{{else}}btn-secondary{{end}}">24h</a>
+    <a href="?id={{.Guild.ID}}&since=7d" class="btn btn-sm {{if eq .Since "7d"}}btn-primary{{else}}btn-secondary{{end}}">7j</a>
+    <a href="?id={{.Guild.ID}}&since=30d" class="btn btn-sm {{if eq .Since "30d"}}btn-primary{{else}}btn-secondary{{end}}">30j</a>
   </div>
 </div>
 
@@ -25,19 +25,19 @@
     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
     <polyline points="14 2 14 8 20 8"/>
   </svg>
-  <h3>Aucun log pour cette période</h3>
-  <p>Les événements de sécurité apparaîtront ici quand Bastion agira sur ce serveur.</p>
+  <h3>{{T "audit.no_logs"}}</h3>
+  <p>{{T "audit.no_logs_desc"}}</p>
 </div>
 {{else}}
 <div class="table-wrap">
   <table>
     <thead>
       <tr>
-        <th>Niveau</th>
-        <th>Événement</th>
-        <th>Utilisateur</th>
-        <th>Détails</th>
-        <th>Date</th>
+        <th>{{T "audit.th_level"}}</th>
+        <th>{{T "audit.th_event"}}</th>
+        <th>{{T "audit.th_user"}}</th>
+        <th>{{T "audit.th_details"}}</th>
+        <th>{{T "audit.th_date"}}</th>
       </tr>
     </thead>
     <tbody>

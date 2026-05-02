@@ -1,5 +1,5 @@
 {{define "breadcrumb"}}
-<a href="/app">Serveurs</a>
+<a href="/app">{{T "nav.servers"}}</a>
 <span class="sep">/</span>
 <span class="current">{{.Guild.Name}}</span>
 {{end}}
@@ -14,37 +14,37 @@
       {{.Guild.Name}}
       <span class="badge {{planBadge .Guild.Plan}}">{{planLabel .Guild.Plan}}</span>
     </div>
-    <div class="guild-header-subtitle">Vue d'ensemble de la sécurité du serveur.</div>
+    <div class="guild-header-subtitle">{{T "guild.subtitle"}}</div>
   </div>
 </div>
 
 <div class="stats-grid">
   <div class="stat-card accent">
-    <div class="stat-label">Modules actifs</div>
+    <div class="stat-label">{{T "guild.stat_modules"}}</div>
     <div class="stat-value">4</div>
-    <div class="stat-meta">sur 7 disponibles</div>
+    <div class="stat-meta">{{T "guild.stat_modules_of"}}</div>
   </div>
   <div class="stat-card danger">
-    <div class="stat-label">Alertes CRIT (7j)</div>
+    <div class="stat-label">{{T "guild.stat_crit"}}</div>
     <div class="stat-value" id="crit-count">0</div>
-    <div class="stat-meta">Niveau critique</div>
+    <div class="stat-meta">{{T "guild.stat_crit_meta"}}</div>
   </div>
   <div class="stat-card warning">
-    <div class="stat-label">Alertes WARN (7j)</div>
+    <div class="stat-label">{{T "guild.stat_warn"}}</div>
     <div class="stat-value" id="warn-count">0</div>
-    <div class="stat-meta">Niveau avertissement</div>
+    <div class="stat-meta">{{T "guild.stat_warn_meta"}}</div>
   </div>
   <div class="stat-card">
-    <div class="stat-label">Plan actuel</div>
+    <div class="stat-label">{{T "guild.stat_plan"}}</div>
     <div class="stat-value" style="font-size:1.4rem">{{planLabel .Guild.Plan}}</div>
-    <div class="stat-meta"><a href="/app/billing">Gérer l'abonnement</a></div>
+    <div class="stat-meta"><a href="/app/billing">{{T "guild.manage_billing"}}</a></div>
   </div>
 </div>
 
 <div class="grid-2">
   <div class="card">
     <div class="card-header">
-      <span class="card-title">Navigation rapide</span>
+      <span class="card-title">{{T "guild.quicknav"}}</span>
     </div>
     <div class="quicknav-grid">
       <a href="/app/guild/audit?id={{.Guild.ID}}" class="quicknav-item">
@@ -52,34 +52,34 @@
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
           <polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/>
         </svg>
-        Audit Logs
+        {{T "nav.audit_logs"}}
       </a>
       <a href="/app/guild/risk?id={{.Guild.ID}}" class="quicknav-item">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
           <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
         </svg>
-        Risk Scores
+        {{T "nav.risk_scores"}}
       </a>
       <a href="/app/guild/modules?id={{.Guild.ID}}" class="quicknav-item">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
         </svg>
-        Modules
+        {{T "nav.modules"}}
       </a>
       <a href="/app/guild/config?id={{.Guild.ID}}" class="quicknav-item">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="3"/>
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
-        Configuration
+        {{T "guild.config"}}
       </a>
     </div>
   </div>
 
   <div class="card">
     <div class="card-header">
-      <span class="card-title">Informations</span>
+      <span class="card-title">{{T "guild.info"}}</span>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px">
       <div class="flex items-center justify-between">
@@ -91,8 +91,8 @@
         <span class="badge {{planBadge .Guild.Plan}}">{{planLabel .Guild.Plan}}</span>
       </div>
       <div class="flex items-center justify-between">
-        <span class="text-secondary text-sm">Statut Bastion</span>
-        <span class="badge badge-success"><span class="badge-dot"></span> Actif</span>
+        <span class="text-secondary text-sm">{{T "guild.info_status"}}</span>
+        <span class="badge badge-success"><span class="badge-dot"></span> {{T "guild.status_active"}}</span>
       </div>
     </div>
   </div>
@@ -100,15 +100,15 @@
 
 <div class="card" style="margin-top:18px">
   <div class="card-header">
-    <span class="card-title">Activité récente</span>
-    <a href="/app/guild/audit?id={{.Guild.ID}}" class="btn btn-ghost btn-sm">Voir tout</a>
+    <span class="card-title">{{T "guild.recent_activity"}}</span>
+    <a href="/app/guild/audit?id={{.Guild.ID}}" class="btn btn-ghost btn-sm">{{T "guild.see_all"}}</a>
   </div>
   <div class="empty-state" style="padding:36px 20px">
     <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
     </svg>
-    <h3>Aucune activité récente</h3>
-    <p>Les événements de sécurité détectés par Bastion apparaîtront ici.</p>
+    <h3>{{T "guild.no_activity"}}</h3>
+    <p>{{T "guild.no_activity_desc"}}</p>
   </div>
 </div>
 {{end}}

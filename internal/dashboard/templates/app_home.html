@@ -1,13 +1,13 @@
 {{define "content"}}
 {{block "breadcrumb" .}}
-<span class="current">Mes serveurs</span>
+<span class="current">{{T "nav.my_servers"}}</span>
 {{end}}
 
 {{if not .Guilds}}
 
 <div class="guilds-hero guilds-hero--empty">
-  <h1 class="guilds-title">Vos serveurs</h1>
-  <p class="guilds-desc">Sélectionnez un serveur pour accéder à sa configuration.</p>
+  <h1 class="guilds-title">{{T "home.title"}}</h1>
+  <p class="guilds-desc">{{T "home.desc"}}</p>
 </div>
 
 <div class="empty-state">
@@ -17,10 +17,10 @@
     <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
     <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
   </svg>
-  <h3>Aucun serveur trouvé</h3>
-  <p>Vous n'avez pas les permissions admin sur des serveurs, ou aucun serveur n'a encore été chargé.</p>
+  <h3>{{T "home.no_servers"}}</h3>
+  <p>{{T "home.no_servers_desc"}}</p>
   <div style="margin-top:20px">
-    <a href="{{inviteURL}}" target="_blank" class="btn btn-crimson">Ajouter Bastion à un serveur</a>
+    <a href="{{inviteURL}}" target="_blank" class="btn btn-crimson">{{T "home.add_bastion"}}</a>
   </div>
 </div>
 
@@ -28,15 +28,15 @@
 
 <div class="guilds-hero">
   <div>
-    <h1 class="guilds-title">Vos serveurs</h1>
-    <p class="guilds-desc">Sélectionnez un serveur pour accéder à sa configuration.</p>
+    <h1 class="guilds-title">{{T "home.title"}}</h1>
+    <p class="guilds-desc">{{T "home.desc"}}</p>
   </div>
   <div class="guilds-controls">
     <div class="guilds-search-wrap">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
-      <input type="search" id="guild-search" class="guilds-search" placeholder="Rechercher un serveur…" autocomplete="off">
+      <input type="search" id="guild-search" class="guilds-search" placeholder="{{T "home.search"}}" autocomplete="off">
     </div>
     <div class="guilds-count" id="guilds-count"></div>
   </div>
@@ -54,13 +54,13 @@
       <div class="gcard-meta">
         <div class="gcard-name">{{.Name}}</div>
         <div class="gcard-status-active">
-          <span class="gcard-pulse"></span>ACTIF
+          <span class="gcard-pulse"></span>{{T "home.server_active"}}
         </div>
       </div>
     </div>
     <div class="gcard-foot">
       <span class="badge {{planBadge .Plan}}">{{planLabel .Plan}}</span>
-      <span class="gcard-cta">Configurer →</span>
+      <span class="gcard-cta">{{T "home.configure"}}</span>
     </div>
   </a>
 
@@ -72,12 +72,12 @@
       </div>
       <div class="gcard-meta">
         <div class="gcard-name">{{.Name}}</div>
-        <div class="gcard-status-inactive">Bastion non installé</div>
+        <div class="gcard-status-inactive">{{T "home.not_installed"}}</div>
       </div>
     </div>
     <div class="gcard-foot">
       <span></span>
-      <a href="{{inviteURL}}" target="_blank" class="gcard-add-btn">Ajouter</a>
+      <a href="{{inviteURL}}" target="_blank" class="gcard-add-btn">{{T "home.add"}}</a>
     </div>
   </div>
   {{end}}
@@ -89,16 +89,16 @@
   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
     <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
   </svg>
-  <p>Aucun serveur ne correspond à cette recherche.</p>
+  <p>{{T "home.no_search_results"}}</p>
 </div>
 
 <div class="guilds-footer">
   <p>
-    Vous ne voyez pas votre serveur ?
-    <a href="{{inviteURL}}" target="_blank">Ajoutez Bastion</a>
-    ou
-    <a href="/auth/login">reconnectez-vous</a>
-    pour mettre à jour la liste.
+    {{T "home.footer_not_visible"}}
+    <a href="{{inviteURL}}" target="_blank">{{T "home.footer_add"}}</a>
+    {{T "home.footer_or"}}
+    <a href="/auth/login">{{T "home.footer_login"}}</a>
+    {{T "home.footer_update"}}
   </p>
 </div>
 

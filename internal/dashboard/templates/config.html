@@ -1,19 +1,19 @@
 {{define "content"}}
 {{block "breadcrumb" .}}
-<a href="/app">Serveurs</a>
+<a href="/app">{{T "nav.servers"}}</a>
 <span class="sep">/</span>
 <a href="/app/guild?id={{.Guild.ID}}">{{.Guild.Name}}</a>
 <span class="sep">/</span>
-<span class="current">Configuration</span>
+<span class="current">{{T "config.title"}}</span>
 {{end}}
 
 <div class="page-header">
-  <div class="page-title">Configuration du serveur</div>
-  <div class="page-subtitle">Paramètres spécifiques à ce serveur.</div>
+  <div class="page-title">{{T "config.title"}}</div>
+  <div class="page-subtitle">{{T "config.subtitle"}}</div>
 </div>
 
 {{if .Saved}}
-<div class="alert alert-success mb-6">Configuration sauvegardée.</div>
+<div class="alert alert-success mb-6">{{T "config.saved"}}</div>
 {{end}}
 {{if .Error}}
 <div class="alert alert-danger mb-6">{{.Error}}</div>
@@ -22,20 +22,19 @@
 <form method="POST" action="/app/guild/config?id={{.Guild.ID}}">
   <div class="card" style="padding:24px;max-width:480px">
     <div style="margin-bottom:20px">
-      <label style="display:block;font-weight:600;margin-bottom:6px;font-size:.9rem">ID de catégorie tickets</label>
+      <label style="display:block;font-weight:600;margin-bottom:6px;font-size:.9rem">{{T "config.ticket_label"}}</label>
       <div class="text-secondary text-sm" style="margin-bottom:8px">
-        L'ID de la catégorie Discord dans laquelle les salons tickets seront créés.
-        Laissez vide pour utiliser la détection automatique.
+        {{T "config.ticket_desc"}}
       </div>
       <input
         type="text"
         name="ticket_category_id"
         value="{{.TicketCategoryID}}"
-        placeholder="ex: 1234567890123456789"
+        placeholder="{{T "config.ticket_placeholder"}}"
         style="width:100%;padding:8px 12px;background:var(--bg-input);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.9rem"
       />
     </div>
-    <button type="submit" class="btn btn-primary">Sauvegarder</button>
+    <button type="submit" class="btn btn-primary">{{T "config.save_btn"}}</button>
   </div>
 </form>
 {{end}}

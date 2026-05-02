@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"io/fs"
+	"log"
 	"mime"
 	"net/http"
 	"strings"
@@ -306,9 +307,11 @@ func detectLang(r *http.Request) string {
 			code := strings.ToLower(tag[:2])
 			switch code {
 			case "fr", "en", "es":
+				log.Printf("[i18n] Accept-Language: %q → lang: %q", accepted, code)
 				return code
 			}
 		}
 	}
+	log.Printf("[i18n] Accept-Language: %q → lang: %q (fallback)", accepted, "en")
 	return "en"
 }
